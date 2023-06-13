@@ -1,3 +1,6 @@
+### error debug ###
+# pip install -U click==8
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -80,6 +83,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
 from pylab import *
+
 def plot_3D(mtx, **kwargs):
     fig = plt.figure(figsize=(10, 10))
     #ax = Axes3D(fig)
@@ -136,7 +140,7 @@ def plot_3D(mtx, **kwargs):
     ################################
     ### 3D terrain delta changes ###
     ################################
-    ax = fig.add_subplot(122, projection='3d')
+    ax2 = fig.add_subplot(122, projection='3d')
     #X = np.linspace(0 , lx , lx )
     #Y = np.linspace(0 , ly , ly )
     X, Y = np.arange(0,lx,1),np.arange(0,ly,1)    # Set up a mesh of positions
@@ -150,29 +154,29 @@ def plot_3D(mtx, **kwargs):
     #print(X.shape)
     #print(Y.shape)
     # Plot the surface.
-    surf = ax.plot_surface(X,Y,Z, cmap=REGISTER_TERRAIN_MAP(),#vmax=Bound, vmin=-Bound,, antialiased=False
+    surf = ax2.plot_surface(X,Y,Z, cmap=REGISTER_TERRAIN_MAP(),#vmax=Bound, vmin=-Bound,, antialiased=False
                            linewidth=0)  
     # Customize the z axis.
     #ax.set_zlim(-Bound, Bound)
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+    ax2.zaxis.set_major_locator(LinearLocator(10))
+    ax2.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
     if azim is not None:
-        ax.azim = azim
+        ax2.azim = azim
     if dist is not None:
-        ax.dist = dist
+        ax2.dist = dist
     if elev is not None:
-        ax.elev = elev
+        ax2.elev = elev
     # Hide grid lines
-    ax.grid(False)
-    ax.set_zlim(0,5000)
-    ax.set_xlabel('x-axis')
-    ax.set_ylabel('y-axis')
+    ax2.grid(False)
+    ax2.set_zlim(0,5000)
+    ax2.set_xlabel('x-axis')
+    ax2.set_ylabel('y-axis')
     
     #ax.xaxis.set_ticklabels(mtx.columns)
     #ax.yaxis.set_ticklabels(mtx.index)
-    ax.invert_xaxis()
-    plt.show(1)
-    
+    ax2.invert_xaxis()
+    plt.show()
+    st.pyplot()
     return(X,Y,Z)
 
 def plot_inequality(mtx,**kwargs):
@@ -190,7 +194,7 @@ def plot_inequality(mtx,**kwargs):
     
     x_inequ = ((x_val/x_val.sum()).cumsum()-np.arange(0,1,1/x_unit)).sum()
     y_inequ = ((y_val/y_val.sum()).cumsum()-np.arange(0,1,1/y_unit)).sum()
-    
+    st.pyplot()
     return(x_inequ,y_inequ,x_val,y_val)
 
 ########################
@@ -239,6 +243,7 @@ def GINI_IDX(mtx=[],x_val=[],y_val=[],x_unit=[],y_unit=[]):
 ### major function of plot stream ###
 # https://stackoverflow.com/questions/16529892/adding-water-flow-arrows-to-matplotlib-contour-plot
 from scipy.interpolate import Rbf
+
 def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     lx,ly= size(mtx,0),size(mtx,1) # Work out matrix dimensions  
     cmlt_contour_color = kwargs['cmlt_contour_color'] if 'cmlt_contour_color' in kwargs.keys() else 'red'
@@ -307,53 +312,181 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ax.invert_yaxis()
     ax.axis('off')
     
-    (x_drvtv,y_drvtv) = GINI_IDX(mtx=mtx,x_val=x_val,y_val=y_val,x_unit=x_unit,y_unit=y_unit)
+    (x_drvtv,y_drvtv) = GINI_IDX(mtx=mtx,x_unit=x_unit,y_unit=y_unit)
     ax1.plot(np.arange(0,1,1/x_unit),x_drvtv)
     ax1.plot(np.arange(0,1,1/x_unit),np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit),color='Black')   
     
     ax2.plot(y_drvtv,np.arange(0,1,1/y_unit))
     ax2.plot(np.arange(0,1,1/y_unit)-np.arange(0,1,1/y_unit),np.arange(0,1,1/y_unit),color='Black')
     ax2.invert_yaxis()
-    
+  
     plt.show()
-    return(x_inequ.sum(),y_inequ.sum(),x_drvtv,y_drvtv,fig)  
+    st.set_option('deprecation.showPyplotGlobalUse', False)
+    st.pyplot()
+    return(x_drvtv,y_drvtv)   
 
 ####################################################
 ### load the object and generate the coordincate ###
 ####################################################
-@st.cache(allow_output_mutation=True)
-def LOAD_DATA(inputDir='',dataDir=''):
-    df = pd.read_excel(r'./'+inputDir+dataDir, sheet_name='Sheet12',header=None)
+
+def LOAD_DATA(inputDir='',dataDir='',sheet_name=''):
+    df = pd.read_excel(r'./'+inputDir+dataDir, sheet_name=sheet_name,header=None)
     return df
 
 inputDir='input/'
 dataDir="IL-6 with amount summary.xlsx"
-df = LOAD_DATA(inputDir=inputDir,dataDir=dataDir)
 
 #####################
 ### web interface ###
 #####################
 
-st.title('Cell Secretion Map')
-st.markdown('**')
-st.header("Comparison of anisotropy and isotropy")
+st.title('An online interactive analytical platform for cell secretion map generation')
+st.markdown('*Zongliang Yue, Lang Zhou, and Pengyu Chen*')
+st.header("Comparison of anisotropy and isotropy cell secretion signals")
 
-### IL6 sheet 21
-(top,btm) = ([0,2,2,2,2,2,3],[1,1,1,1,200,200,200])
-diameter = 15
-(x_start,x_end,y_start,y_end) = (25-diameter,25+diameter,25-diameter,25+diameter)
+step1 = st.checkbox('Step 1: show the heatmap and delta changes of the cell signals',value=True)
+cmlt_contour_color = ['blue','','blue','','orange','','red']
+col1, col2 = st.columns(2)
+drvt1_index_x_sets = []
+drvt1_index_y_sets = []
+drvt2_index_x_sets = []
+drvt2_index_y_sets = []
+if step1:
+    with col1:
+        drvt1_index_x_sets = []
+        drvt1_index_y_sets = []
+        ### IL6 sheet 21 anisotropy
+        # List of options for the select box
+        sheet_names1 = ['Sheet21-15max', 'Sheet20','Sheet19','Sheet18','Sheet17-15max','Sheet16','Sheet11','Sheet10-180c','Sheet9-180c',
+                       'Sheet8-15max','Sheet7-15 max','Sheet6-depends','Sheet5-depends','Sheet3','Sheet2','Sheet1']
+        selected_option1 = st.selectbox('Select an option', sheet_names1)
+        df1 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option1)
+        
+        hs1_10,hs1_20,hs1_30 = st.slider('10-min hotspot nodes', 0, 10, 2,key ='hs1_10'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')
+        (top,btm) = ([0,2,hs1_10,2,hs1_20,2,hs1_30],[1,1,1,1,200,200,200])
+        
+        df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
+        col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y')
+        col1_diameter = st.slider('diameter', 0, 50, 13,key ='1dmt')
+        (x_start,x_end,y_start,y_end) = (col1_center_x-col1_diameter,col1_center_x+col1_diameter,col1_center_y-col1_diameter,col1_center_y+col1_diameter)
+        
+        #cmlt_contour_color = ['blue','','blue','','orange','','red']
+        #(x_unit,y_unit) = (x_end-x_start,y_end-y_start)
+        #i=2
+        #mtx = df1.iloc[i*50:(i+1)*50,0:50]
+        #mtx = mtx.iloc[x_start:x_end,y_start:y_end]
+        #mtx_pre = df1.iloc[(i-2)*50:(i-1)*50,0:50]      
+        #mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
+        #(x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=6,btm=200,previous = mtx_pre,
+        #                                               x_unit = x_unit,y_unit = y_unit, 
+        #                                               cmlt_contour_color = cmlt_contour_color[i])
+        df=df1
+        for i in range(2,7,2):
+            mtx = df.iloc[i*50:(i+1)*50,0:50]
+            mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
+    
+            if i == 0:
+                mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
+                mtx_pre.columns = range(y_start,y_end)
+                mtx_pre.index=range(x_start,x_end)
+                (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
+                (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top[i],btm=btm[i],previous = mtx_pre,
+                                                                x_unit = x_end-x_start,y_unit = y_end-y_start,
+                                                                cmlt_contour_color=cmlt_contour_color[i])
+    
+            else:
+                # 10 mins interval
+                mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50]      
+                mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
+                (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
+                (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top[i],btm=btm[i],previous = mtx_pre,
+                                                                x_unit = x_end-x_start,y_unit = y_end-y_start,
+                                                                cmlt_contour_color=cmlt_contour_color[i])
+    
+            ### Derivative index
+            drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
+            drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:13]) - np.array(y_drvtv[-13:][::-1])])) 
+            
+    
+    with col2:
+        drvt2_index_x_sets = []
+        drvt2_index_y_sets = []
+        ### IL6 sheet 15 anisotropy
+        # List of options for the select box
+        sheet_names2 = ['Sheet15','Sheet14-180c-dep','Sheet13-180c-depends','Sheet12']
+        
+        selected_option2 = st.selectbox('Select an option', sheet_names2)
+        df2 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option2)
+        
+        hs2_10,hs2_20,hs2_30 = st.slider('10-min hotspot nodes', 0, 10, 0,key ='hs2_10'),st.slider('20-min hotspot nodes', 0, 10, 10,key ='hs2_20'),st.slider('30-min hotspot nodes', 0, 10, 10,key ='hs2_30')
+        (top,btm) = ([0,0,hs2_10,0,hs2_20,10,hs2_30],[1,1,1,1,200,200,200])
+        df2_x,df2_y = float(df2.iloc[0,50]),float(df2.iloc[0,51])
+        col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
+        col2_diameter = st.slider('diameter', 0, 50, 13,key ='2dmt')
+        (x_start,x_end,y_start,y_end) = (col2_center_x-col2_diameter,col2_center_x+col2_diameter,col2_center_y-col2_diameter,col2_center_y+col2_diameter)
+        
+        #cmlt_contour_color = ['blue','','blue','','orange','','red']
+        #(x_unit,y_unit) = (x_end-x_start,y_end-y_start)
+        #i=2
+        #mtx = df2.iloc[i*50:(i+1)*50,0:50]
+        #mtx = mtx.iloc[x_start:x_end,y_start:y_end]
+        #mtx_pre = df2.iloc[(i-2)*50:(i-1)*50,0:50]      
+        #mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
+        #(x_drvtv,y_drvtv,fig) = plotStream(mtx=mtx,top=6,btm=200,previous = mtx_pre,
+        #                                                x_unit = x_unit,y_unit = y_unit, 
+        #                                                cmlt_contour_color = cmlt_contour_color[i])    
+        df=df2
+        for i in range(2,7,2):
+            mtx = df.iloc[i*50:(i+1)*50,0:50]
+            mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
+    
+            if i == 0:
+                mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
+                mtx_pre.columns = range(y_start,y_end)
+                mtx_pre.index=range(x_start,x_end)
+                (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
+                (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top[i],btm=btm[i],previous = mtx_pre,
+                                                                x_unit = x_end-x_start,y_unit = y_end-y_start,
+                                                                cmlt_contour_color=cmlt_contour_color[i])
+    
+            else:
+                # 10 mins interval
+                mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50]      
+                mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
+                (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
+                (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top[i],btm=btm[i],previous = mtx_pre,
+                                                                x_unit = x_end-x_start,y_unit = y_end-y_start,
+                                                                cmlt_contour_color=cmlt_contour_color[i])
+    
+            ### Derivative index
+            drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
+            drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:13]) - np.array(y_drvtv[-13:][::-1])])) 
+            
+    
+    
 
-#mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
-#mtx_pre.columns = range(y_start,y_end)
-#mtx_pre.index=range(x_start,x_end)
-(x_unit,y_unit) = (x_end-x_start,y_end-y_start)
-i=2
-mtx = df.iloc[i*50:(i+1)*50,0:50]
-mtx = mtx.iloc[x_start:x_end,y_start:y_end]
-mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50]      
-mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
-(x_inequ, y_inequ,x_drvtv,y_drvtv,fig) = plotStream(mtx=mtx,top=6,btm=200,previous = mtx_pre,
-                                                x_unit = x_unit,y_unit = y_unit, 
-                                                cmlt_contour_color = cmlt_contour_color[i])
-st.plotly_chart(fig,use_container_width=True)  
-st.write(pd.head(10))
+
+def plot_time(IL6_21_IDI=[],IL6_15_IDI=[]):
+    fig = plt.figure(figsize=(5, 5))
+    ax = fig.add_subplot(111)
+    ax.plot(range(0,len(IL6_21_IDI),1),IL6_21_IDI,color='red',label="anisotropy")#np.repeat(0,len(IDI))
+    ax.plot(range(0,len(IL6_15_IDI),1),IL6_15_IDI,color='blue',label="isotropy")#np.repeat(0,len(IDI))
+    ax.set_xlabel('time')
+    ax.set_ylabel('DII')
+    ax.set_ylim(0,1.5)
+    fig.show() 
+    ax.set_xticks([0,1,2])
+    ax.set_xticklabels(['10 mins','20 mins','30 mins'])  
+    plt.legend(loc="upper right",title='cell type')
+    st.set_option('deprecation.showPyplotGlobalUse', False)
+    st.pyplot()
+    
+step2 = st.checkbox('Step 2: show the derivative of inequality index (DII)',value=True)
+if step2:
+    DII1=np.sqrt(np.array(drvt1_index_x_sets)**2+np.array(drvt1_index_y_sets)**2)
+    DII2=np.sqrt(np.array(drvt2_index_x_sets)**2+np.array(drvt2_index_y_sets)**2)
+    _start = 0
+    _end = 3
+    plot_time(IL6_21_IDI=DII1,IL6_15_IDI=DII2)
+
+#st.sidebar.subheader('Adjust Parameters')
