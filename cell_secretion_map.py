@@ -19,11 +19,11 @@ from plotly import graph_objs as go
 from plotly.subplots import make_subplots
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode, GridUpdateMode
 import matplotlib.pyplot as plt
-from bokeh.models import ColumnDataSource, CustomJS
-from bokeh.plotting import figure
-from bokeh.palettes import Category10_4, Category20, Category20b, Category20c
-from streamlit_bokeh_events import streamlit_bokeh_events
-from bokeh.transform import factor_cmap
+#from bokeh.models import ColumnDataSource, CustomJS
+#from bokeh.plotting import figure
+#from bokeh.palettes import Category10_4, Category20, Category20b, Category20c
+#from streamlit_bokeh_events import streamlit_bokeh_events
+#from bokeh.transform import factor_cmap
 import plotly.express as px
 st.set_page_config(layout='wide')
 from matplotlib import cm
