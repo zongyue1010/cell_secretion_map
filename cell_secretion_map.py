@@ -7,7 +7,7 @@ import re
 import matplotlib
 import matplotlib.pyplot as plt
 #import generateheatmap as Heatmap
-import generateNetwork as Network
+#import generateNetwork as Network
 import plotly.tools
 import random
 import plotly.express as px  
