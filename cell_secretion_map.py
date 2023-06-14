@@ -287,7 +287,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     if top != 0:
         dy, dx = np.gradient(-zi_cmltv) # Flow goes down gradient (thus -zi)
         stream = ax.streamplot(xi[0,:], yi[:,0], dx, dy, density=1,arrowsize=1,linewidth=3,minlength=0.011,
-                           color = 'grey',broken_streamlines=True,
+                           color = 'grey',#broken_streamlines=True,
                            start_points=np.column_stack((mask_top_cmltv_pd_pstn[1],mask_top_cmltv_pd_pstn[0]))
                           )#color='0.6',
         # Customize the transparency level
