@@ -294,13 +294,18 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
         stream.lines.set_alpha(0.5)
 
     ### Contour gridded head observations
-    contours = ax.contour(xi, yi, zi, 
+    try:
+        contours = ax.contour(xi, yi, zi, 
                           linewidths=2,levels=list(np.linspace(500,5000,7)),cmap=newcmp,#list(np.linspace(500,5000,7))
                           linestyles='dashed')
-    ax.clabel(contours)
-    contours_cmltv = ax.contour(xi, yi, zi_cmltv, [1200], colors = cmlt_contour_color,alpha=0.5,linewidths=4) #
-    ax.clabel(contours_cmltv,inline=True, fontsize=12)
-    
+        ax.clabel(contours)
+    except:
+        print("not available")
+    try:
+        contours_cmltv = ax.contour(xi, yi, zi_cmltv, [1200], colors = cmlt_contour_color,alpha=0.5,linewidths=4) #
+        ax.clabel(contours_cmltv,inline=True, fontsize=12)
+    except:
+        print("not available")    
     ### Plot well locations ###
     if top != 0:
         ax.plot(xpos[mask_top],ypos[mask_top], 'ko',color=cmlt_contour_color)
