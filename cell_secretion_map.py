@@ -359,6 +359,14 @@ dataDir="IL-6 with amount summary.xlsx"
 #####################
 ### web interface ###
 #####################
+from PIL import Image
+def add_logo(logo_path, width, height):
+    """Read and return a resized logo"""
+    logo = Image.open(logo_path)
+    modified_logo = logo.resize((width, height))
+    return modified_logo
+
+st.image(add_logo(logo_path="./aipharm_logo.png", width=400, height=100)) 
 
 st.title('An online interactive analytical platform for cell secretion map generation')
 st.markdown('*Zongliang Yue, Lang Zhou, and Pengyu Chen*')
