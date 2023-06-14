@@ -176,7 +176,7 @@ def plot_3D(mtx, **kwargs):
     #ax.yaxis.set_ticklabels(mtx.index)
     ax2.invert_xaxis()
     plt.show()
-    st.pyplot()
+    st.pyplot(fig)
     return(X,Y,Z)
 
 def plot_inequality(mtx,**kwargs):
@@ -322,7 +322,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
   
     plt.show()
     st.set_option('deprecation.showPyplotGlobalUse', False)
-    st.pyplot()
+    st.pyplot(fig)
     return(x_drvtv,y_drvtv)   
 
 ####################################################
@@ -479,7 +479,7 @@ def plot_time(IL6_21_IDI=[],IL6_15_IDI=[]):
     ax.set_xticklabels(['10 mins','20 mins','30 mins'])  
     plt.legend(loc="upper right",title='cell type')
     st.set_option('deprecation.showPyplotGlobalUse', False)
-    st.pyplot()
+    st.pyplot(fig)
     
 step2 = st.checkbox('Step 2: show the derivative of inequality index (DII)',value=True)
 if step2:
