@@ -395,7 +395,9 @@ if step1:
             df1 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option1)
             
             hs1_10,hs1_20,hs1_30 = st.slider('10-min hotspot nodes', 0, 10, 2,key ='hs1_10'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')
-            (top,btm) = ([0,2,hs1_10,2,hs1_20,2,hs1_30],[1,1,1,1,200,200,200])
+            pixels = (2+col1_diameter)**2
+            hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixel-3 if pixels <= 200 else 200
+            (top,btm) = ([0,0,hs1_10,0,hs1_20,10,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
             
             df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
             col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y')
@@ -412,7 +414,9 @@ if step1:
             df2 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option2)
             
             hs2_10,hs2_20,hs2_30 = st.slider('10-min hotspot nodes', 0, 10, 0,key ='hs2_10'),st.slider('20-min hotspot nodes', 0, 10, 10,key ='hs2_20'),st.slider('30-min hotspot nodes', 0, 10, 10,key ='hs2_30')
-            (top,btm) = ([0,0,hs2_10,0,hs2_20,10,hs2_30],[1,1,1,1,200,200,200])
+            pixels = (2+col2_diameter)**2
+            hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixel-3 if pixels <= 200 else 200
+            (top,btm) = ([0,0,hs2_10,0,hs2_20,10,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
             df2_x,df2_y = float(df2.iloc[0,50]),float(df2.iloc[0,51])
             col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
             col2_diameter = st.slider('diameter', 0, 50, 13,key ='2dmt')
