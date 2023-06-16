@@ -1,5 +1,9 @@
+
 ### error debug ###
+
+
 # pip install -U click==8
+
 
 import streamlit as st
 import pandas as pd
@@ -373,7 +377,7 @@ st.markdown('*Zongliang Yue, Lang Zhou, and Pengyu Chen*')
 st.header("Comparison of anisotropy and isotropy cell secretion signals")
 
 step1 = st.checkbox('Step 1: show the heatmap and delta changes of the cell signals',value=True)
-cmlt_contour_color = ['blue','','blue','','orange','','red']
+cmlt_contour_color = ['blue','blue','blue','orange','orange','red','red']
 
 drvt1_index_x_sets,drvt1_index_y_sets = [],[]
 drvt2_index_x_sets,drvt2_index_y_sets = [],[]
@@ -394,14 +398,14 @@ if step1:
             selected_option1 = st.selectbox('Select an option', sheet_names1)
             df1 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option1)
             
-            hs1_10,hs1_20,hs1_30 = st.slider('10-min hotspot nodes', 0, 10, 2,key ='hs1_10'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')      
+            hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')      
             df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
             col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y')
             col1_diameter = st.slider('diameter', 0, 50, 13,key ='1dmt')
             
             pixels = (2+col1_diameter)**2
             hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
-            (top1,btm1) = ([0,0,hs1_10,0,hs1_20,10,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
+            (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
             
         with col2:
             drvt2_index_x_sets = []
@@ -413,7 +417,7 @@ if step1:
             selected_option2 = st.selectbox('Select an option', sheet_names2)
             df2 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option2)
             
-            hs2_10,hs2_20,hs2_30 = st.slider('10-min hotspot nodes', 0, 10, 0,key ='hs2_10'),st.slider('20-min hotspot nodes', 0, 10, 10,key ='hs2_20'),st.slider('30-min hotspot nodes', 0, 10, 10,key ='hs2_30')
+            hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 0,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 0,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10,5,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 10,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 10,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 10,key ='hs2_30')
             
             df2_x,df2_y = float(df2.iloc[0,50]),float(df2.iloc[0,51])
             col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
@@ -421,7 +425,7 @@ if step1:
             
             pixels = (2+col2_diameter)**2
             hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
-            (top2,btm2) = ([0,0,hs2_10,0,hs2_20,10,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
+            (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
             
         submitted = st.form_submit_button("generate and compare!")              
 
@@ -430,11 +434,11 @@ if step1:
         with col1_:
             df=df1
             (x_start,x_end,y_start,y_end) = (col1_center_x-col1_diameter,col1_center_x+col1_diameter,col1_center_y-col1_diameter,col1_center_y+col1_diameter)
-            for i in range(2,7,2):
+            for i in range(1,7,1):
                 mtx = df.iloc[i*50:(i+1)*50,0:50]
                 mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
             
-                if i == 0:
+                if i == 0 | 1:
                     mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
                     mtx_pre.columns = range(y_start,y_end)
                     mtx_pre.index=range(x_start,x_end)
@@ -444,8 +448,10 @@ if step1:
                                                                     cmlt_contour_color=cmlt_contour_color[i])
             
                 else:
-                    # 10 mins interval
-                    mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50]      
+                    ## 10 mins interval
+                    #mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50] 
+                    # 5 mins interval
+                    mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50] 
                     mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
                     (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                     (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
@@ -459,11 +465,11 @@ if step1:
         with col2_:      
             df=df2
             (x_start,x_end,y_start,y_end) = (col2_center_x-col2_diameter,col2_center_x+col2_diameter,col2_center_y-col2_diameter,col2_center_y+col2_diameter)
-            for i in range(2,7,2):
+            for i in range(1,7,1):
                 mtx = df.iloc[i*50:(i+1)*50,0:50]
                 mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
         
-                if i == 0:
+                if i == 0|1:
                     mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
                     mtx_pre.columns = range(y_start,y_end)
                     mtx_pre.index=range(x_start,x_end)
@@ -473,8 +479,10 @@ if step1:
                                                                     cmlt_contour_color=cmlt_contour_color[i])
         
                 else:
-                    # 10 mins interval
-                    mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50]      
+                    ## 10 mins interval
+                    #mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50] 
+                    # 5 mins interval
+                    mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50]    
                     mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
                     (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                     (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
@@ -493,10 +501,10 @@ def plot_time(IL6_21_IDI=[],IL6_15_IDI=[]):
     ax.plot(range(0,len(IL6_15_IDI),1),IL6_15_IDI,color='blue',label="isotropy")#np.repeat(0,len(IDI))
     ax.set_xlabel('time')
     ax.set_ylabel('DII')
-    ax.set_ylim(0,1.5)
+    ax.set_ylim(0,2.5)
     fig.show() 
-    ax.set_xticks([0,1,2])
-    ax.set_xticklabels(['10 mins','20 mins','30 mins'])  
+    ax.set_xticks([0,1,2,3,4,5])
+    ax.set_xticklabels(['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins'])  
     plt.legend(loc="upper right",title='cell type')
     st.set_option('deprecation.showPyplotGlobalUse', False)
     # Adjust the figure size
@@ -516,7 +524,7 @@ if step2:
     with col2__:   
         table=pd.DataFrame({'anisotropy':DII1,'isotropy':DII2})
         try:
-            table.index=['10 mins','20 mins','30 mins']  
+            table.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']  
             st.write(table)
             st.markdown(get_table_download_link(table, fileName = "DII_comparison"), unsafe_allow_html=True)
         except:
