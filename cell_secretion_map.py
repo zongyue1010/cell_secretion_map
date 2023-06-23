@@ -349,6 +349,9 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     st.pyplot(fig)
     return(x_drvtv,y_drvtv)   
 
+
+
+
 ####################################################
 ### load the object and generate the coordincate ###
 ####################################################
@@ -357,8 +360,31 @@ def LOAD_DATA(inputDir='',dataDir='',sheet_name=''):
     df = pd.read_excel(r'./'+inputDir+dataDir, sheet_name=sheet_name,header=None)
     return df
 
+###############################
+### sidemenu of data source ###
+###############################
+st.sidebar.subheader('Data source')
 inputDir='input/'
-dataDir="IL-6 with amount summary.xlsx"
+from os import walk
+f = []
+for (dirpath, dirnames, filenames) in walk(r'./'+inputDir):
+    f.extend(filenames)
+    break
+    
+dataDir = st.sidebar.selectbox(
+    'select a cell source:',
+    tuple(f),key='workingdir'
+    )
+st.sidebar.markdown('You selected `%s`' % dataDir)
+
+import openpyxl
+
+# Load the Excel file
+workbook = openpyxl.load_workbook(r'./'+inputDir+dataDir)
+
+# Get a list of all sheet names
+sheet_names = workbook.sheetnames
+
 
 #####################
 ### web interface ###
@@ -383,7 +409,10 @@ drvt1_index_x_sets,drvt1_index_y_sets = [],[]
 drvt2_index_x_sets,drvt2_index_y_sets = [],[]
 
 
-
+   
+####################
+### main content ###
+####################
 col1, col2 = st.columns(2)
 if step1:
     with st.form("form"):
@@ -393,14 +422,19 @@ if step1:
             drvt1_index_y_sets = []
             ### IL6 sheet 21 anisotropy
             # List of options for the select box
-            sheet_names1 = ['Sheet21-15max', 'Sheet20','Sheet19','Sheet18','Sheet17-15max','Sheet16','Sheet11','Sheet10-180c','Sheet9-180c',
-                           'Sheet8-15max','Sheet7-15 max','Sheet6-depends','Sheet5-depends','Sheet3','Sheet2','Sheet1']
-            selected_option1 = st.selectbox('Select an option', sheet_names1)
+            #sheet_names1 = ['Sheet21-15max', 'Sheet20','Sheet19','Sheet18','Sheet17-15max','Sheet16','Sheet11','Sheet10-180c','Sheet9-180c',
+             #              'Sheet8-15max','Sheet7-15 max','Sheet6-depends','Sheet5-depends','Sheet3','Sheet2','Sheet1']
+            sheet_names1 = sheet_names 
+            selected_option1 = st.selectbox('Select an option', sheet_names1,key='sheet_names1')
             df1 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option1)
             
             hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')      
+            
             df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
+            if ~df1_x.isdigit():
+                df1_x,df1_y = 25,25            
             col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y')
+
             col1_diameter = st.slider('diameter', 0, 50, 13,key ='1dmt')
             
             pixels = (2+col1_diameter)**2
@@ -412,15 +446,17 @@ if step1:
             drvt2_index_y_sets = []
             ### IL6 sheet 15 anisotropy
             # List of options for the select box
-            sheet_names2 = ['Sheet15','Sheet14-180c-dep','Sheet13-180c-depends','Sheet12']
-            
-            selected_option2 = st.selectbox('Select an option', sheet_names2)
+            sheet_names2 = sheet_names
+            selected_option2 = st.selectbox('Select an option', sheet_names2,key='sheet_names2')
             df2 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option2)
             
             hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 0,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 0,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10,5,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 10,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 10,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 10,key ='hs2_30')
-            
-            df2_x,df2_y = float(df2.iloc[0,50]),float(df2.iloc[0,51])
+
+            df2_x,df2_y = df2.iloc[0,50],df2.iloc[0,51]
+            if ~df2_x.isdigit():
+                df2_x,df2_y = 25,25            
             col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
+
             col2_diameter = st.slider('diameter', 0, 50, 13,key ='2dmt')
             
             pixels = (2+col2_diameter)**2
@@ -529,4 +565,4 @@ if step2:
             st.markdown(get_table_download_link(table, fileName = "DII_comparison"), unsafe_allow_html=True)
         except:
             st.write("")
-#st.sidebar.subheader('Adjust Parameters')
+            
