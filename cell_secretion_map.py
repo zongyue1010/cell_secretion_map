@@ -269,7 +269,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     mtx_pre = kwargs['previous'] if 'previous' in kwargs.keys() else pd.DataFrame(np.zeros(shape=(50, 50)))
     x_unit = kwargs['x_unit'] if 'x_unit' in kwargs.keys() else 50 
     y_unit = kwargs['y_unit'] if 'y_unit' in kwargs.keys() else 50
-    
+    density = kwargs['density'] if 'density' in kwargs.keys() else 1
+    cntrlinecml = kwargs['cntrlinecml'] if 'cntrlinecml' in kwargs.keys() else 1200
     # -- Plot --------------------------
     fig = plt.figure(figsize=(10, 10))
     #ax = fig.add_subplot(111)
@@ -321,7 +322,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     except:
         print("not available")
     try:
-        contours_cmltv = ax.contour(xi, yi, zi_cmltv, [1200], colors = cmlt_contour_color,alpha=0.5,linewidths=4) #
+        contours_cmltv = ax.contour(xi, yi, zi_cmltv, [cntrlinecml], colors = cmlt_contour_color,alpha=0.5,linewidths=4) #
         ax.clabel(contours_cmltv,inline=True, fontsize=12)
     except:
         print("not available")    
@@ -420,6 +421,7 @@ if step1:
         
             drvt1_index_x_sets = []
             drvt1_index_y_sets = []
+            
             ### IL6 sheet 21 anisotropy
             # List of options for the select box
             #sheet_names1 = ['Sheet21-15max', 'Sheet20','Sheet19','Sheet18','Sheet17-15max','Sheet16','Sheet11','Sheet10-180c','Sheet9-180c',
@@ -428,8 +430,14 @@ if step1:
             selected_option1 = st.selectbox('Select an option', sheet_names1,key='sheet_names1')
             df1 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option1)
             
+            ### parameters ###
+            # show node number set
             hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')      
-            
+            # show arrow density
+            density1 = st.slider('streamplot arrow density', 0.0, 10.0, 1.0,key ='density1') 
+            # countour line of culmulative
+            cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml1')
+            # center coordinate
             df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
             if ~df1_x.isdigit():
                 df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
@@ -450,8 +458,14 @@ if step1:
             selected_option2 = st.selectbox('Select an option', sheet_names2,key='sheet_names2')
             df2 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option2)
             
+            ### parameters ###
+            # show node number set
             hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 0,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 0,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10,5,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 10,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 10,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 10,key ='hs2_30')
-
+            # show arrow density
+            density2 = st.slider('streamplot arrow density', 0.0, 10.0, 1.0,key ='density2')
+            # countour line of culmulative
+            cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml2')
+            # center coordinate
             df2_x,df2_y = df2.iloc[0,50],df2.iloc[0,51]
             if ~df2_x.isdigit():
                 df2_x,df2_y = df2.iloc[1,50],df2.iloc[1,51]        
@@ -481,7 +495,8 @@ if step1:
                     (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                     (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
-                                                                    cmlt_contour_color=cmlt_contour_color[i])
+                                                                    cmlt_contour_color=cmlt_contour_color[i],
+                                                   density=density1,cntrlinecml=cntrlinecml1)
             
                 else:
                     ## 10 mins interval
@@ -492,7 +507,8 @@ if step1:
                     (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                     (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
-                                                                    cmlt_contour_color=cmlt_contour_color[i])
+                                                                    cmlt_contour_color=cmlt_contour_color[i],
+                                                   density=density1,cntrlinecml=cntrlinecml1)
             
                 ### Derivative index
                 drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
@@ -512,7 +528,8 @@ if step1:
                     (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                     (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
-                                                                    cmlt_contour_color=cmlt_contour_color[i])
+                                                                    cmlt_contour_color=cmlt_contour_color[i],
+                                                   density=density2,cntrlinecml=cntrlinecml2)
         
                 else:
                     ## 10 mins interval
@@ -523,7 +540,8 @@ if step1:
                     (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                     (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
-                                                                    cmlt_contour_color=cmlt_contour_color[i])
+                                                                    cmlt_contour_color=cmlt_contour_color[i],
+                                                   density=density2,cntrlinecml=cntrlinecml2)
         
                 ### Derivative index
                 drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
