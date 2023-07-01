@@ -269,6 +269,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     mtx_pre = kwargs['previous'] if 'previous' in kwargs.keys() else pd.DataFrame(np.zeros(shape=(50, 50)))
     x_unit = kwargs['x_unit'] if 'x_unit' in kwargs.keys() else 50 
     y_unit = kwargs['y_unit'] if 'y_unit' in kwargs.keys() else 50
+    densityYN=kwargs['densityYN'] if 'densityYN' in kwargs.keys() else True
+    cntrlinecmlYN=kwargs['cntrlinecmlYN'] if 'cntrlinecmlYN' in kwargs.keys() else True
     density = kwargs['density'] if 'density' in kwargs.keys() else 1
     cntrlinecml = kwargs['cntrlinecml'] if 'cntrlinecml' in kwargs.keys() else 1200
     # -- Plot --------------------------
@@ -304,16 +306,18 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     mask_top_cmltv_pd_pstn = np.where(mask_top_cmltv_pd == True)
     
     ### Plot flowlines cmltv arrow plot ###
-    if top != 0:
-        dy, dx = np.gradient(-zi_cmltv) # Flow goes down gradient (thus -zi)
-        stream = ax.streamplot(xi[0,:], yi[:,0], dx, dy, density=1,arrowsize=1,linewidth=3,minlength=0.011,
-                           color = 'grey',#broken_streamlines=True,
-                           start_points=np.column_stack((mask_top_cmltv_pd_pstn[1],mask_top_cmltv_pd_pstn[0]))
-                          )#color='0.6',
-        # Customize the transparency level
-        stream.lines.set_alpha(0.5)
-
+    if densityYN == True:
+        if top != 0:
+            dy, dx = np.gradient(-zi_cmltv) # Flow goes down gradient (thus -zi)
+            stream = ax.streamplot(xi[0,:], yi[:,0], dx, dy, density=1,arrowsize=1,linewidth=3,minlength=0.011,
+                               color = 'grey',#broken_streamlines=True,
+                               start_points=np.column_stack((mask_top_cmltv_pd_pstn[1],mask_top_cmltv_pd_pstn[0]))
+                              )#color='0.6',
+            # Customize the transparency level
+            stream.lines.set_alpha(0.5)
+    
     ### Contour gridded head observations
+    
     try:
         contours = ax.contour(xi, yi, zi, 
                           linewidths=2,levels=list(np.linspace(500,5000,7)),cmap=newcmp,#list(np.linspace(500,5000,7))
@@ -321,11 +325,12 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
         ax.clabel(contours)
     except:
         print("not available")
-    try:
-        contours_cmltv = ax.contour(xi, yi, zi_cmltv, [cntrlinecml], colors = cmlt_contour_color,alpha=0.5,linewidths=4) #
-        ax.clabel(contours_cmltv,inline=True, fontsize=12)
-    except:
-        print("not available")    
+    if cntrlinecmlYN == True:
+        try:
+            contours_cmltv = ax.contour(xi, yi, zi_cmltv, [cntrlinecml], colors = cmlt_contour_color,alpha=0.5,linewidths=4) #
+            ax.clabel(contours_cmltv,inline=True, fontsize=12)
+        except:
+            print("not available")    
     ### Plot well locations ###
     if top != 0:
         ax.plot(xpos[mask_top],ypos[mask_top], 'ko',color=cmlt_contour_color)
@@ -434,15 +439,20 @@ if step1:
             # show node number set
             hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')      
             # show arrow density
-            density1 = st.slider('streamplot arrow density', 0.0, 10.0, 1.0,key ='density1') 
+            densityYN1 = st.checkbox('show arrow',value=True,key ='densityYN1')
+            density1 = st.slider('Arrow density', 0.0, 10.0, 1.0,key ='density1') 
+            
             # countour line of culmulative
+            cntrlinecmlYN1 = st.checkbox('show cumulative signal contour line',value=True,key ='cntrlinecmlYN1')
             cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml1')
+            
             # center coordinate
             df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
             if ~df1_x.isdigit():
                 df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
             col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y')
 
+            
             col1_diameter = st.slider('diameter', 0, 50, 13,key ='1dmt')
             
             pixels = (2+col1_diameter)**2
@@ -462,8 +472,10 @@ if step1:
             # show node number set
             hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 0,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 0,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10,5,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 10,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 10,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 10,key ='hs2_30')
             # show arrow density
+            densityYN2 = st.checkbox('show arrow',value=True,key ='densityYN2')
             density2 = st.slider('streamplot arrow density', 0.0, 10.0, 1.0,key ='density2')
             # countour line of culmulative
+            cntrlinecmlYN2 = st.checkbox('show cumulative signal contour line',value=True,key ='cntrlinecmlYN2')
             cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml2')
             # center coordinate
             df2_x,df2_y = df2.iloc[0,50],df2.iloc[0,51]
@@ -496,7 +508,8 @@ if step1:
                     (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
-                                                   density=density1,cntrlinecml=cntrlinecml1)
+                                                   densityYN=densityYN1,density=density1,
+                                                   cntrlinecmlYN=cntrlinecmlYN1,cntrlinecml=cntrlinecml1)
             
                 else:
                     ## 10 mins interval
@@ -508,7 +521,8 @@ if step1:
                     (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
-                                                   density=density1,cntrlinecml=cntrlinecml1)
+                                                   densityYN=densityYN1,density=density1,
+                                                   cntrlinecmlYN=cntrlinecmlYN1,cntrlinecml=cntrlinecml1)
             
                 ### Derivative index
                 drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
@@ -529,7 +543,8 @@ if step1:
                     (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
-                                                   density=density2,cntrlinecml=cntrlinecml2)
+                                                   densityYN=densityYN2,density=density2,
+                                                   cntrlinecmlYN=cntrlinecmlYN2,cntrlinecml=cntrlinecml2)
         
                 else:
                     ## 10 mins interval
@@ -541,7 +556,8 @@ if step1:
                     (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
-                                                   density=density2,cntrlinecml=cntrlinecml2)
+                                                   densityYN=densityYN2,density=density2,
+                                                   cntrlinecmlYN=cntrlinecmlYN2,cntrlinecml=cntrlinecml2)
         
                 ### Derivative index
                 drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
