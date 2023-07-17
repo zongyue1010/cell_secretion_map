@@ -353,9 +353,28 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     plt.show()
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot(fig)
-    return(x_drvtv,y_drvtv)   
+    return(x_drvtv,y_drvtv,contours,contours_cmltv)   
 
-
+def get_contourline_df(contours):
+    # Extract contour data
+    contour_data = contours.collections[0].get_paths()
+    
+    # Get height values
+    heights = contours.levels
+    
+    # Collect x, y, and height information
+    data_points = []
+    for path, height in zip(contour_data, heights):
+        vertices = path.vertices
+        for vertex in vertices:
+            x_val, y_val = vertex
+            data_points.append((x_val, y_val, height))
+    
+    # Create a pandas DataFrame
+    df = pd.DataFrame(data_points, columns=['x', 'y', 'height'])
+    
+    # Display the DataFrame
+    return(df)
 
 
 ####################################################
@@ -420,6 +439,8 @@ drvt2_index_x_sets,drvt2_index_y_sets = [],[]
 ### main content ###
 ####################
 col1, col2 = st.columns(2)
+timeline=['0 mins','5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']
+
 if step1:
     with st.form("form"):
         with col1:
@@ -492,8 +513,11 @@ if step1:
         submitted = st.form_submit_button("generate and compare!")              
 
     if submitted:
+
         col1_, col2_ = st.columns(2)
         with col1_:
+            contours_dfs = pd.DataFrame()
+            contours_cmltv_dfs = pd.DataFrame()
             df=df1
             (x_start,x_end,y_start,y_end) = (col1_center_x-col1_diameter,col1_center_x+col1_diameter,col1_center_y-col1_diameter,col1_center_y+col1_diameter)
             for i in range(1,7,1):
@@ -505,7 +529,7 @@ if step1:
                     mtx_pre.columns = range(y_start,y_end)
                     mtx_pre.index=range(x_start,x_end)
                     (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
+                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
                                                    densityYN=densityYN1,density=density1,
@@ -518,17 +542,33 @@ if step1:
                     mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50] 
                     mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
                     (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
+                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
                                                    densityYN=densityYN1,density=density1,
                                                    cntrlinecmlYN=cntrlinecmlYN1,cntrlinecml=cntrlinecml1)
+                
             
                 ### Derivative index
                 drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
                 drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:13]) - np.array(y_drvtv[-13:][::-1])])) 
-           
+                
+                ### contour line export
+                contours_df = get_contourline_df(contours)
+                contours_df['time'] = timeline[i]
+                contours_dfs = pd.concat([contours_dfs,contours_df])
+                
+                contours_cmltv_df = get_contourline_df(contours_cmltv)
+                contours_cmltv_df['time'] = timeline[i]
+                contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
+     
+            st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
+            st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
+                
+                
         with col2_:      
+            contours_dfs = pd.DataFrame()
+            contours_cmltv_dfs = pd.DataFrame()
             df=df2
             (x_start,x_end,y_start,y_end) = (col2_center_x-col2_diameter,col2_center_x+col2_diameter,col2_center_y-col2_diameter,col2_center_y+col2_diameter)
             for i in range(1,7,1):
@@ -540,7 +580,7 @@ if step1:
                     mtx_pre.columns = range(y_start,y_end)
                     mtx_pre.index=range(x_start,x_end)
                     (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
+                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
                                                    densityYN=densityYN2,density=density2,
@@ -553,17 +593,30 @@ if step1:
                     mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50]    
                     mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
                     (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
+                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
                                                    densityYN=densityYN2,density=density2,
                                                    cntrlinecmlYN=cntrlinecmlYN2,cntrlinecml=cntrlinecml2)
-        
+                
                 ### Derivative index
                 drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
                 drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:13]) - np.array(y_drvtv[-13:][::-1])])) 
-
-
+                
+                ### contour line export
+                contours_df = get_contourline_df(contours)
+                contours_df['time'] = timeline[i]
+                contours_dfs = pd.concat([contours_dfs,contours_df])
+                
+                contours_cmltv_df = get_contourline_df(contours_cmltv)
+                contours_cmltv_df['time'] = timeline[i]
+                contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
+ 
+                
+            st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
+            st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
+               
+                
 def plot_time(IL6_21_IDI=[],IL6_15_IDI=[]):
     fig = plt.figure(figsize=(5, 5))
     ax = fig.add_subplot(111)
