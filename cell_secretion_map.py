@@ -554,13 +554,14 @@ if step1:
                 drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:13]) - np.array(y_drvtv[-13:][::-1])])) 
                 
                 ### contour line export
-                contours_df = get_contourline_df(contours)
-                contours_df['time'] = timeline[i]
-                contours_dfs = pd.concat([contours_dfs,contours_df])
-                
-                contours_cmltv_df = get_contourline_df(contours_cmltv)
-                contours_cmltv_df['time'] = timeline[i]
-                contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
+                if contours:
+                    contours_df = get_contourline_df(contours)
+                    contours_df['time'] = timeline[i]
+                    contours_dfs = pd.concat([contours_dfs,contours_df])
+                if contours_cmltv:
+                    contours_cmltv_df = get_contourline_df(contours_cmltv)
+                    contours_cmltv_df['time'] = timeline[i]
+                    contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
      
             st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
             st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
@@ -604,13 +605,14 @@ if step1:
                 drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:13]) - np.array(y_drvtv[-13:][::-1])])) 
                 
                 ### contour line export
-                contours_df = get_contourline_df(contours)
-                contours_df['time'] = timeline[i]
-                contours_dfs = pd.concat([contours_dfs,contours_df])
-                
-                contours_cmltv_df = get_contourline_df(contours_cmltv)
-                contours_cmltv_df['time'] = timeline[i]
-                contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
+                if contours:
+                    contours_df = get_contourline_df(contours)
+                    contours_df['time'] = timeline[i]
+                    contours_dfs = pd.concat([contours_dfs,contours_df])
+                if contours_cmltv:
+                    contours_cmltv_df = get_contourline_df(contours_cmltv)
+                    contours_cmltv_df['time'] = timeline[i]
+                    contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
  
                 
             st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
