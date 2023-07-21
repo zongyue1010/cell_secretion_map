@@ -259,20 +259,35 @@ def GINI_IDX(mtx=[],x_val=[],y_val=[],x_unit=[],y_unit=[]):
     
     return(x_drvtv,y_drvtv)
 
+
+
 ### major function of plot stream ###
 # https://stackoverflow.com/questions/16529892/adding-water-flow-arrows-to-matplotlib-contour-plot
 from scipy.interpolate import Rbf
+import io
+import zipfile
+def save_as_pdf(buffer,pdf_filename):
+    # Create a PDF using reportlab
+    
+    c = canvas.Canvas(pdf_filename)
+    img = io.BytesIO(buffer.getvalue())
+    c.drawImage(img, 100, 500)  # Adjust the position and size as needed
+    c.save()
+    st.success(f'Successfully saved as {pdf_filename}')
 
 def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
-    lx,ly= size(mtx,0),size(mtx,1) # Work out matrix dimensions  
+    # -- parameters --------------------
+    lx,ly= np.size(mtx,0),np.size(mtx,1) # Work out matrix dimensions  
     cmlt_contour_color = kwargs['cmlt_contour_color'] if 'cmlt_contour_color' in kwargs.keys() else 'red'
     mtx_pre = kwargs['previous'] if 'previous' in kwargs.keys() else pd.DataFrame(np.zeros(shape=(50, 50)))
     x_unit = kwargs['x_unit'] if 'x_unit' in kwargs.keys() else 50 
     y_unit = kwargs['y_unit'] if 'y_unit' in kwargs.keys() else 50
     densityYN=kwargs['densityYN'] if 'densityYN' in kwargs.keys() else True
-    cntrlinecmlYN=kwargs['cntrlinecmlYN'] if 'cntrlinecmlYN' in kwargs.keys() else True
     density = kwargs['density'] if 'density' in kwargs.keys() else 1
     cntrlinecml = kwargs['cntrlinecml'] if 'cntrlinecml' in kwargs.keys() else 1200
+    show_contour = kwargs['show_contour'] if 'show_contour' in kwargs.keys() else True
+    show_cmlt_contour = kwargs['show_cmlt_contour'] if 'show_cmlt_contour' in kwargs.keys() else True
+    timeline = kwargs['timeline'] if 'timeline' in kwargs.keys() else ''
     # -- Plot --------------------------
     fig = plt.figure(figsize=(10, 10))
     #ax = fig.add_subplot(111)
@@ -315,45 +330,111 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
                               )#color='0.6',
             # Customize the transparency level
             stream.lines.set_alpha(0.5)
-    
+
+        
     ### Contour gridded head observations
-    
+    contours =[]
     try:
-        contours = ax.contour(xi, yi, zi, 
+        ax.contourf(xi, yi, zi, 
                           linewidths=2,levels=list(np.linspace(500,5000,7)),cmap=newcmp,#list(np.linspace(500,5000,7))
-                          linestyles='dashed')
-        ax.clabel(contours)
+                            #cmap="jet2",
+                          linestyles='dashed')  
+        if show_cmlt_contour == True:
+            contours = ax.contour(xi, yi, zi, 
+                              linewidths=2,levels=list(np.linspace(500,5000,7)),cmap=newcmp,#list(np.linspace(500,5000,7))
+                              linestyles='dashed')
+            ax.clabel(contours)
     except:
-        print("not available")
-    if cntrlinecmlYN == True:
+        print("not available")          
+    contours_cmltv = []
+    if show_contour == True:
         try:
             contours_cmltv = ax.contour(xi, yi, zi_cmltv, [cntrlinecml], colors = cmlt_contour_color,alpha=0.5,linewidths=4) #
             ax.clabel(contours_cmltv,inline=True, fontsize=12)
         except:
-            print("not available")    
+            print("not available")     
+
+    
+    ####################
+    ##### color ######
+    #print(zi)
+    #plt.imshow(zi,extent=[-lx, lx, -ly, ly], #cmap=REGISTER_TERRAIN_MAP(),#vmax=Bound, vmin=-Bound,, antialiased=False
+    #                       interpolation='nearest',cmap='viridis')  # linewidth=1,
+    
+    
     ### Plot well locations ###
-    if top != 0:
-        ax.plot(xpos[mask_top],ypos[mask_top], 'ko',color=cmlt_contour_color)
-        #ax.plot(xpos[mask_top_cmltv],ypos[mask_top_cmltv], 'ko',color='black')
-        #ax.plot(xpos[mask_btm],ypos[mask_btm], 'ko',color='blue')
+    #if top != 0:
+    #    ax.plot(xpos[mask_top],ypos[mask_top], 'ko',color='black',markersize=2) #cmlt_contour_color
+    #    #ax.plot(xpos[mask_top_cmltv],ypos[mask_top_cmltv], 'ko',color=)
+    #    #ax.plot(xpos[mask_btm],ypos[mask_btm], 'ko',color='blue')
     ax.set_xlabel('x-axis')
     ax.set_ylabel('y-axis')
     ax.invert_xaxis()
     ax.invert_yaxis()
-    ax.axis('off')
-    
+    #ax.axis('off')
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
     (x_drvtv,y_drvtv) = GINI_IDX(mtx=mtx,x_unit=x_unit,y_unit=y_unit)
-    ax1.plot(np.arange(0,1,1/x_unit),x_drvtv)
-    ax1.plot(np.arange(0,1,1/x_unit),np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit),color='Black')   
     
-    ax2.plot(y_drvtv,np.arange(0,1,1/y_unit))
-    ax2.plot(np.arange(0,1,1/y_unit)-np.arange(0,1,1/y_unit),np.arange(0,1,1/y_unit),color='Black')
+    # Set the maximum number of ticks on the x-axis
+    max_ticks = 3
+    tick_labelsize=20
+    
+    import matplotlib.ticker as ticker
+    ax1.plot(np.arange(0,1,1/x_unit),x_drvtv,linewidth=6)
+    ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=6)   
+    ax1.xaxis.set_visible(False)
+    ax1.yaxis.set_label_position("right")
+    ax1.yaxis.set_tick_params(labelsize=tick_labelsize) 
+    ax1.yaxis.tick_right()
+    
+    # Set the new tick locations on the x-axis
+    ax1.yaxis.set_major_locator(ticker.MaxNLocator(max_ticks))
+    #ax1.set_yticklabels([np.float(i) *100 for i in ax1.get_yticks()])
+    #ax1.set_yticks(range(len([np.float(i)*100 for i in ax1.get_yticks()])))
+    # Optionally, you can format the tick labels if needed
+    ax1.set_yticklabels(["{}%".format(int(tick*100)) for tick in ax1.get_yticks()])
+    
+    
+    ax2.plot(y_drvtv,np.arange(0,1,1/y_unit),linewidth=6)
+    ax2.plot((np.arange(0,1,1/y_unit)-np.arange(0,1,1/y_unit)),np.arange(0,1,1/y_unit),color='Black',linewidth=6)
     ax2.invert_yaxis()
-  
+    ax2.xaxis.set_tick_params(labelsize=tick_labelsize)
+    ax2.yaxis.set_visible(False)
+    # Set the new tick locations on the x-axis
+    print(ax2.get_xticks())
+    ax2.xaxis.set_major_locator(ticker.MaxNLocator(max_ticks))
+    #ax2.set_xticklabels([np.float(i)*100 for i in ax2.get_xticks()])
+    #ax2.set_xticks(range(len([np.float(i)*100 for i in ax2.get_xticks()])))
+    # Optionally, you can format the tick labels if needed
+    ax2.set_xticklabels(["{}%".format(int(tick*100)) for tick in ax2.get_xticks()])   
+
+    
+    # Save the plot as a png file
+    plt.savefig('./output/'+timeline+".png")
+    
     plt.show()
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot(fig)
-    return(x_drvtv,y_drvtv,contours,contours_cmltv)   
+    
+    
+    ### save figure buffer ###
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='pdf')
+    buffer.seek(0)
+    ## Add a button to save as PDF
+    #if st.button('Save as PDF '+timeline):
+    #    save_as_pdf(buffer,timeline+'_figure.pdf')
+    if st.download_button("Download PDF"+timeline, data=buffer, file_name=timeline+"figure.pdf", mime="application/pdf"):
+        st.success("File download initiated!")
+    return(x_drvtv,y_drvtv,contours,contours_cmltv)  
+
+def create_zip():
+    with zipfile.ZipFile("figures.zip", "w") as zipf:
+        for file in os.listdir("./output/"):
+            if file.endswith(".png"):
+                zipf.write("./output/"+file)
+
 
 def get_contourline_df(contours):
     # Extract contour data
@@ -460,12 +541,15 @@ if step1:
             # show node number set
             hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')      
             # show arrow density
-            densityYN1 = st.checkbox('show arrow',value=True,key ='densityYN1')
+            densityYN1 = st.checkbox('show arrow',value=False,key ='densityYN1')
             density1 = st.slider('Arrow density', 0.0, 10.0, 1.0,key ='density1') 
-            
+
+            # countour line 
+            show_contour1 = st.checkbox('show signal contour line',value=False,key ='show_contour1')            
             # countour line of culmulative
-            cntrlinecmlYN1 = st.checkbox('show cumulative signal contour line',value=True,key ='cntrlinecmlYN1')
+            show_cmlt_contour1 = st.checkbox('show cumulative signal contour line',value=False,key ='show_cmlt_contour1')
             cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml1')
+            
             
             # center coordinate
             df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
@@ -480,6 +564,8 @@ if step1:
             hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
             (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
             
+            
+            
         with col2:
             drvt2_index_x_sets = []
             drvt2_index_y_sets = []
@@ -493,10 +579,14 @@ if step1:
             # show node number set
             hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 0,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 0,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10,5,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 10,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 10,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 10,key ='hs2_30')
             # show arrow density
-            densityYN2 = st.checkbox('show arrow',value=True,key ='densityYN2')
+            densityYN2 = st.checkbox('show arrow',value=False,key ='densityYN2')
             density2 = st.slider('streamplot arrow density', 0.0, 10.0, 1.0,key ='density2')
+            
+            # countour line 
+            show_contour2 = st.checkbox('show signal contour line',value=False,key ='show_contour2')            
             # countour line of culmulative
-            cntrlinecmlYN2 = st.checkbox('show cumulative signal contour line',value=True,key ='cntrlinecmlYN2')
+            show_cmlt_contour2 = st.checkbox('show cumulative signal contour line',value=False,key ='show_cmlt_contour2')
+
             cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml2')
             # center coordinate
             df2_x,df2_y = df2.iloc[0,50],df2.iloc[0,51]
@@ -533,7 +623,9 @@ if step1:
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
                                                    densityYN=densityYN1,density=density1,
-                                                   cntrlinecmlYN=cntrlinecmlYN1,cntrlinecml=cntrlinecml1)
+                                                   show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,
+                                                                           cntrlinecml=cntrlinecml1,
+                                                                           timeline = 'a_'+timeline[i])
             
                 else:
                     ## 10 mins interval
@@ -546,7 +638,9 @@ if step1:
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
                                                    densityYN=densityYN1,density=density1,
-                                                   cntrlinecmlYN=cntrlinecmlYN1,cntrlinecml=cntrlinecml1)
+                                                   show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,    
+                                                   cntrlinecml=cntrlinecml1,
+                                                                          timeline = 'a_'+timeline[i])
                 
             
                 ### Derivative index
@@ -585,7 +679,9 @@ if step1:
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
                                                    densityYN=densityYN2,density=density2,
-                                                   cntrlinecmlYN=cntrlinecmlYN2,cntrlinecml=cntrlinecml2)
+                                                   show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2,    
+                                                   cntrlinecml=cntrlinecml2,
+                                                                          timeline = 'b_'+timeline[i])
         
                 else:
                     ## 10 mins interval
@@ -598,7 +694,9 @@ if step1:
                                                                     x_unit = x_end-x_start,y_unit = y_end-y_start,
                                                                     cmlt_contour_color=cmlt_contour_color[i],
                                                    densityYN=densityYN2,density=density2,
-                                                   cntrlinecmlYN=cntrlinecmlYN2,cntrlinecml=cntrlinecml2)
+                                                    show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2, 
+                                                   cntrlinecml=cntrlinecml2,
+                                                                          timeline = 'b_'+timeline[i])
                 
                 ### Derivative index
                 drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
@@ -617,8 +715,12 @@ if step1:
                 
             st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
             st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
-               
-                
+    ### zip files ###         
+    create_zip()             
+    # Provide download link
+    with open("figures.zip", "rb") as f:
+        st.download_button("Download Figures", f.read(), file_name="figures.zip")
+        
 def plot_time(IL6_21_IDI=[],IL6_15_IDI=[]):
     fig = plt.figure(figsize=(5, 5))
     ax = fig.add_subplot(111)
