@@ -402,13 +402,14 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ax2.xaxis.set_tick_params(labelsize=tick_labelsize)
     ax2.yaxis.set_visible(False)
     # Set the new tick locations on the x-axis
-    print(ax2.get_xticks())
     ax2.xaxis.set_major_locator(ticker.MaxNLocator(max_ticks))
     #ax2.set_xticklabels([np.float(i)*100 for i in ax2.get_xticks()])
     #ax2.set_xticks(range(len([np.float(i)*100 for i in ax2.get_xticks()])))
     # Optionally, you can format the tick labels if needed
     ax2.set_xticklabels(["{}%".format(int(tick*100)) for tick in ax2.get_xticks()])   
 
+    # Adjust the margins (decrease them)
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     
     # Save the plot as a png file
     plt.savefig('./output/'+timeline+".png")
