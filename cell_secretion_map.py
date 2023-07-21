@@ -412,6 +412,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     
     # Save the plot as a png file
     plt.savefig('./output/'+timeline+".png")
+    plt.savefig('./output/'+timeline+".pdf", format='pdf')
     
     plt.show()
     st.set_option('deprecation.showPyplotGlobalUse', False)
@@ -434,7 +435,8 @@ def create_zip():
         for file in os.listdir("./output/"):
             if file.endswith(".png"):
                 zipf.write("./output/"+file)
-
+            if file.endswith(".pdf"):
+                zipf.write("./output/"+file)
 
 def get_contourline_df(contours):
     # Extract contour data
@@ -715,7 +717,7 @@ if step1:
                 
             st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
             st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
-    ### zip files ###         
+    ### zip files and download ###         
     create_zip()             
     # Provide download link
     with open("figures.zip", "rb") as f:
