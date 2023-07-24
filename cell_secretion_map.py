@@ -288,6 +288,9 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     show_contour = kwargs['show_contour'] if 'show_contour' in kwargs.keys() else True
     show_cmlt_contour = kwargs['show_cmlt_contour'] if 'show_cmlt_contour' in kwargs.keys() else True
     timeline = kwargs['timeline'] if 'timeline' in kwargs.keys() else ''
+    tick_labelsize = kwargs['tick_labelsize'] if 'tick_labelsize' in kwargs.keys() else 20
+    dpi_value = kwargs['dpi_value'] if 'dpi_value' in kwargs.keys() else 300
+    
     # -- Plot --------------------------
     fig = plt.figure(figsize=(10, 10))
     #ax = fig.add_subplot(111)
@@ -378,7 +381,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     
     # Set the maximum number of ticks on the x-axis
     max_ticks = 3
-    tick_labelsize=20
+    
     
     import matplotlib.ticker as ticker
     ax1.plot(np.arange(0,1,1/x_unit),x_drvtv,linewidth=6)
@@ -411,8 +414,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     # Adjust the margins (decrease them)
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     
-    # Save the plot as a png file
-    plt.savefig('./output/'+timeline+".png")
+    # Save the plot as png and pdf files
+    plt.savefig('./output/'+timeline+".png",dpi=dpi_value)
     plt.savefig('./output/'+timeline+".pdf", format='pdf')
     
     plt.show()
@@ -526,9 +529,9 @@ col1, col2 = st.columns(2)
 timeline=['0 mins','5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']
 
 if step1:
-    with st.form("form"):
-        with col1:
-        
+    dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
+    with st.form("form"):    
+        with col1: 
             drvt1_index_x_sets = []
             drvt1_index_y_sets = []
             
@@ -548,27 +551,26 @@ if step1:
             density1 = st.slider('Arrow density', 0.0, 10.0, 1.0,key ='density1') 
 
             # countour line 
-            show_contour1 = st.checkbox('show signal contour line',value=False,key ='show_contour1')            
-            # countour line of culmulative
+            show_contour1 = st.checkbox('show signal contour line',value=False,key ='show_contour1')         
+            
+            # countour line of cumulative
             show_cmlt_contour1 = st.checkbox('show cumulative signal contour line',value=False,key ='show_cmlt_contour1')
             cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml1')
-            
-            
+                   
             # center coordinate
             df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
             if ~df1_x.isdigit():
                 df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
             col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y')
-
-            
-            col1_diameter = st.slider('diameter', 0, 50, 13,key ='1dmt')
-            
+            # diameters
+            col1_diameter = st.slider('diameter', 0, 50, 13,key ='1dmt')          
             pixels = (2+col1_diameter)**2
             hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
             (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
             
-            
-            
+            # tick_labelsize
+            tick_labelsize1 = st.slider('tick label size',1, 40, 20,key ='tick_labelsize1')
+        
         with col2:
             drvt2_index_x_sets = []
             drvt2_index_y_sets = []
@@ -596,13 +598,14 @@ if step1:
             if ~df2_x.isdigit():
                 df2_x,df2_y = df2.iloc[1,50],df2.iloc[1,51]        
             col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
-
-            col2_diameter = st.slider('diameter', 0, 50, 13,key ='2dmt')
-            
+            col2_diameter = st.slider('diameter', 0, 50, 13,key ='2dmt')           
             pixels = (2+col2_diameter)**2
             hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
             (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
             
+            # tick_labelsize
+            tick_labelsize2 = st.slider('tick label size',1, 40, 20,key ='tick_labelsize2')
+        
         submitted = st.form_submit_button("generate and compare!")              
 
     if submitted:
@@ -622,13 +625,17 @@ if step1:
                     mtx_pre.columns = range(y_start,y_end)
                     mtx_pre.index=range(x_start,x_end)
                     (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
-                                                                    x_unit = x_end-x_start,y_unit = y_end-y_start,
-                                                                    cmlt_contour_color=cmlt_contour_color[i],
-                                                   densityYN=densityYN1,density=density1,
-                                                   show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,
-                                                                           cntrlinecml=cntrlinecml1,
-                                                                           timeline = 'a_'+timeline[i])
+                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                        mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
+                        x_unit = x_end-x_start,y_unit = y_end-y_start,
+                        cmlt_contour_color=cmlt_contour_color[i],
+                        densityYN=densityYN1,density=density1,
+                        show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,
+                        cntrlinecml=cntrlinecml1,
+                        timeline = 'a_'+timeline[i],
+                        tick_labelsize = tick_labelsize1,
+                        dpi_value = dpi_value
+                    )
             
                 else:
                     ## 10 mins interval
@@ -637,13 +644,17 @@ if step1:
                     mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50] 
                     mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
                     (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
-                                                                    x_unit = x_end-x_start,y_unit = y_end-y_start,
-                                                                    cmlt_contour_color=cmlt_contour_color[i],
-                                                   densityYN=densityYN1,density=density1,
-                                                   show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,    
-                                                   cntrlinecml=cntrlinecml1,
-                                                                          timeline = 'a_'+timeline[i])
+                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                        mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
+                        x_unit = x_end-x_start,y_unit = y_end-y_start,
+                        cmlt_contour_color=cmlt_contour_color[i],
+                        densityYN=densityYN1,density=density1,
+                        show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,    
+                        cntrlinecml=cntrlinecml1,
+                        timeline = 'a_'+timeline[i],
+                        tick_labelsize = tick_labelsize1,
+                        dpi_value = dpi_value
+                    )
                 
             
                 ### Derivative index
@@ -678,13 +689,17 @@ if step1:
                     mtx_pre.columns = range(y_start,y_end)
                     mtx_pre.index=range(x_start,x_end)
                     (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
-                                                                    x_unit = x_end-x_start,y_unit = y_end-y_start,
-                                                                    cmlt_contour_color=cmlt_contour_color[i],
-                                                   densityYN=densityYN2,density=density2,
-                                                   show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2,    
-                                                   cntrlinecml=cntrlinecml2,
-                                                                          timeline = 'b_'+timeline[i])
+                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                        mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
+                        x_unit = x_end-x_start,y_unit = y_end-y_start,
+                        cmlt_contour_color=cmlt_contour_color[i],
+                        densityYN=densityYN2,density=density2,
+                        show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2,    
+                        cntrlinecml=cntrlinecml2,
+                        timeline = 'b_'+timeline[i],
+                        tick_labelsize = tick_labelsize2,
+                        dpi_value = dpi_value
+                    )
         
                 else:
                     ## 10 mins interval
@@ -693,13 +708,17 @@ if step1:
                     mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50]    
                     mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
                     (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
-                                                                    x_unit = x_end-x_start,y_unit = y_end-y_start,
-                                                                    cmlt_contour_color=cmlt_contour_color[i],
-                                                   densityYN=densityYN2,density=density2,
-                                                    show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2, 
-                                                   cntrlinecml=cntrlinecml2,
-                                                                          timeline = 'b_'+timeline[i])
+                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                        mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
+                        x_unit = x_end-x_start,y_unit = y_end-y_start,
+                        cmlt_contour_color=cmlt_contour_color[i],
+                        densityYN=densityYN2,density=density2,
+                        show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2, 
+                        cntrlinecml=cntrlinecml2,
+                        timeline = 'b_'+timeline[i],
+                        tick_labelsize = tick_labelsize2,
+                        dpi_value = dpi_value
+                    )
                 
                 ### Derivative index
                 drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
