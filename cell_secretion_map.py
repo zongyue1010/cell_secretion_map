@@ -290,6 +290,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     timeline = kwargs['timeline'] if 'timeline' in kwargs.keys() else ''
     tick_labelsize = kwargs['tick_labelsize'] if 'tick_labelsize' in kwargs.keys() else 20
     dpi_value = kwargs['dpi_value'] if 'dpi_value' in kwargs.keys() else 300
+    linewidth = kwargs['linewidth'] if 'linewidth' in kwargs.keys() else 6
+    labelweight = kwargs['labelweight'] if 'labelweight' in kwargs.keys() else 'normal'
     
     # -- Plot --------------------------
     fig = plt.figure(figsize=(10, 10))
@@ -318,7 +320,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     func_cmltv = Rbf(xpos[mask_cmltv],ypos[mask_cmltv], z_cmltv[mask_cmltv], function='linear')
     zi_cmltv,zi = func_cmltv(xi, yi),func(xi, yi) 
     
-    # get the positions of the masked culmulative expression
+    # get the positions of the masked cumulative expression
     shape = (lx,ly)
     mask_top_cmltv_pd = pd.DataFrame(mask_top_cmltv.reshape(shape))
     mask_top_cmltv_pd_pstn = np.where(mask_top_cmltv_pd == True)
@@ -335,7 +337,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
             stream.lines.set_alpha(0.5)
 
         
-    ### Contour gridded head observations
+    ### Contour gridded head observations ###
     contours =[]
     try:
         ax.contourf(xi, yi, zi, 
@@ -378,29 +380,36 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
     (x_drvtv,y_drvtv) = GINI_IDX(mtx=mtx,x_unit=x_unit,y_unit=y_unit)
-    
+
+
+
+    ### plot IDI (index of derivative inequality) ###
     # Set the maximum number of ticks on the x-axis
     max_ticks = 3
-    
-    
+       
     import matplotlib.ticker as ticker
-    ax1.plot(np.arange(0,1,1/x_unit),x_drvtv,linewidth=6)
-    ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=6)   
+    ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=linewidth)  
+    ax1.plot(np.arange(0,1,1/x_unit),x_drvtv,linewidth=linewidth)
     ax1.xaxis.set_visible(False)
     ax1.yaxis.set_label_position("right")
     ax1.yaxis.set_tick_params(labelsize=tick_labelsize) 
+    # Set tick label font weight
+    ax1.set_yticklabels(ax1.get_yticks(), rotation=0, weight=labelweight)    
     ax1.yaxis.tick_right()
     
     # Set the new tick locations on the x-axis
     ax1.yaxis.set_major_locator(ticker.MaxNLocator(max_ticks))
     #ax1.set_yticklabels([np.float(i) *100 for i in ax1.get_yticks()])
     #ax1.set_yticks(range(len([np.float(i)*100 for i in ax1.get_yticks()])))
+    # Set tick label font weight
     # Optionally, you can format the tick labels if needed
-    ax1.set_yticklabels(["{}%".format(int(tick*100)) for tick in ax1.get_yticks()])
+    ax1.set_yticklabels(ax1.get_yticks(), rotation=0, weight=labelweight)    
+    ax1.set_xticklabels(["{}%".format(int(tick*100)) for tick in ax1.get_xticks()])
+    ax1.set_yticklabels(["{}%".format(int(tick*100)) for tick in ax1.get_yticks()]) 
     
     
-    ax2.plot(y_drvtv,np.arange(0,1,1/y_unit),linewidth=6)
-    ax2.plot((np.arange(0,1,1/y_unit)-np.arange(0,1,1/y_unit)),np.arange(0,1,1/y_unit),color='Black',linewidth=6)
+    ax2.plot((np.arange(0,1,1/y_unit)-np.arange(0,1,1/y_unit)),np.arange(0,1,1/y_unit),color='Black',linewidth=linewidth)
+    ax2.plot(y_drvtv,np.arange(0,1,1/y_unit),linewidth=linewidth)
     ax2.invert_yaxis()
     ax2.xaxis.set_tick_params(labelsize=tick_labelsize)
     ax2.yaxis.set_visible(False)
@@ -408,9 +417,14 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ax2.xaxis.set_major_locator(ticker.MaxNLocator(max_ticks))
     #ax2.set_xticklabels([np.float(i)*100 for i in ax2.get_xticks()])
     #ax2.set_xticks(range(len([np.float(i)*100 for i in ax2.get_xticks()])))
+    # Set tick label font weight
     # Optionally, you can format the tick labels if needed
+    ax2.set_xticklabels(ax2.get_xticks(), rotation=0, weight=labelweight)
     ax2.set_xticklabels(["{}%".format(int(tick*100)) for tick in ax2.get_xticks()])   
+    ax2.set_yticklabels(["{}%".format(int(tick*100)) for tick in ax2.get_yticks()])
 
+
+    
     # Adjust the margins (decrease them)
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     
@@ -529,7 +543,14 @@ col1, col2 = st.columns(2)
 timeline=['0 mins','5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']
 
 if step1:
+    # pdi for png figure
     dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
+    # linewidth
+    linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
+    # tick_labelsize
+    tick_labelsize = st.slider('tick label size',1, 40, 20,key ='tick_labelsize')    # 
+    # labelweight
+    labelweight = st.selectbox('Select an option', ['bold','normal','heavey'],key='labelweight')    #     
     with st.form("form"):    
         with col1: 
             drvt1_index_x_sets = []
@@ -568,9 +589,7 @@ if step1:
             hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
             (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
             
-            # tick_labelsize
-            tick_labelsize1 = st.slider('tick label size',1, 40, 20,key ='tick_labelsize1')
-        
+ 
         with col2:
             drvt2_index_x_sets = []
             drvt2_index_y_sets = []
@@ -602,10 +621,8 @@ if step1:
             pixels = (2+col2_diameter)**2
             hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
             (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
+
             
-            # tick_labelsize
-            tick_labelsize2 = st.slider('tick label size',1, 40, 20,key ='tick_labelsize2')
-        
         submitted = st.form_submit_button("generate and compare!")              
 
     if submitted:
@@ -633,8 +650,10 @@ if step1:
                         show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,
                         cntrlinecml=cntrlinecml1,
                         timeline = 'a_'+timeline[i],
-                        tick_labelsize = tick_labelsize1,
-                        dpi_value = dpi_value
+                        tick_labelsize = tick_labelsize,
+                        dpi_value = dpi_value,
+                        linewidth = linewidth,
+                        labelweight=labelweight
                     )
             
                 else:
@@ -652,8 +671,10 @@ if step1:
                         show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,    
                         cntrlinecml=cntrlinecml1,
                         timeline = 'a_'+timeline[i],
-                        tick_labelsize = tick_labelsize1,
-                        dpi_value = dpi_value
+                        tick_labelsize = tick_labelsize,
+                        dpi_value = dpi_value,
+                        linewidth = linewidth,
+                        labelweight=labelweight
                     )
                 
             
@@ -697,8 +718,10 @@ if step1:
                         show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2,    
                         cntrlinecml=cntrlinecml2,
                         timeline = 'b_'+timeline[i],
-                        tick_labelsize = tick_labelsize2,
-                        dpi_value = dpi_value
+                        tick_labelsize = tick_labelsize,
+                        dpi_value = dpi_value,
+                        linewidth = linewidth,
+                        labelweight=labelweight
                     )
         
                 else:
@@ -716,8 +739,11 @@ if step1:
                         show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2, 
                         cntrlinecml=cntrlinecml2,
                         timeline = 'b_'+timeline[i],
-                        tick_labelsize = tick_labelsize2,
-                        dpi_value = dpi_value
+                        tick_labelsize = tick_labelsize,
+                        dpi_value = dpi_value,
+                        linewidth = linewidth,
+                        labelweight=labelweight
+                        
                     )
                 
                 ### Derivative index
