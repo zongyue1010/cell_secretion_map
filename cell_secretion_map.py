@@ -292,6 +292,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     dpi_value = kwargs['dpi_value'] if 'dpi_value' in kwargs.keys() else 300
     linewidth = kwargs['linewidth'] if 'linewidth' in kwargs.keys() else 6
     labelweight = kwargs['labelweight'] if 'labelweight' in kwargs.keys() else 'normal'
+    framelinewidth = kwargs['framelinewidth'] if 'framelinewidth' in kwargs.keys() else 10
     
     # -- Plot --------------------------
     fig = plt.figure(figsize=(10, 10))
@@ -422,7 +423,12 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ax2.set_xticklabels(ax2.get_xticks(), rotation=0, weight=labelweight)
     ax2.set_xticklabels(["{}%".format(int(tick*100)) for tick in ax2.get_xticks()])   
     ax2.set_yticklabels(["{}%".format(int(tick*100)) for tick in ax2.get_yticks()])
-
+    
+    for axis in ['top', 'bottom', 'left', 'right']:
+        ax.spines[axis].set_linewidth(framelinewidth)  # change width
+        ax1.spines[axis].set_linewidth(framelinewidth)  # change width
+        ax2.spines[axis].set_linewidth(framelinewidth)  # change width
+        #ax.spines[axis].set_color('red')    # change color
 
     
     # Adjust the margins (decrease them)
@@ -550,7 +556,10 @@ if step1:
     # tick_labelsize
     tick_labelsize = st.slider('tick label size',1, 40, 20,key ='tick_labelsize')    # 
     # labelweight
-    labelweight = st.selectbox('Select an option', ['bold','normal','heavey'],key='labelweight')    #     
+    labelweight = st.selectbox('Select an option', ['bold','normal','heavy'],key='labelweight')    #   
+    # frame line width
+    framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
+    
     with st.form("form"):    
         with col1: 
             drvt1_index_x_sets = []
@@ -653,7 +662,8 @@ if step1:
                         tick_labelsize = tick_labelsize,
                         dpi_value = dpi_value,
                         linewidth = linewidth,
-                        labelweight=labelweight
+                        labelweight=labelweight,
+                        framelinewidth=framelinewidth
                     )
             
                 else:
@@ -674,7 +684,8 @@ if step1:
                         tick_labelsize = tick_labelsize,
                         dpi_value = dpi_value,
                         linewidth = linewidth,
-                        labelweight=labelweight
+                        labelweight=labelweight,
+                        framelinewidth=framelinewidth
                     )
                 
             
@@ -721,7 +732,8 @@ if step1:
                         tick_labelsize = tick_labelsize,
                         dpi_value = dpi_value,
                         linewidth = linewidth,
-                        labelweight=labelweight
+                        labelweight=labelweight,
+                        framelinewidth=framelinewidth
                     )
         
                 else:
@@ -742,7 +754,8 @@ if step1:
                         tick_labelsize = tick_labelsize,
                         dpi_value = dpi_value,
                         linewidth = linewidth,
-                        labelweight=labelweight
+                        labelweight=labelweight,
+                        framelinewidth=framelinewidth
                         
                     )
                 
