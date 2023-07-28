@@ -3,8 +3,6 @@
 
 
 # pip install -U click==8
-
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -293,8 +291,11 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     linewidth = kwargs['linewidth'] if 'linewidth' in kwargs.keys() else 6
     labelweight = kwargs['labelweight'] if 'labelweight' in kwargs.keys() else 'normal'
     framelinewidth = kwargs['framelinewidth'] if 'framelinewidth' in kwargs.keys() else 10
+    fontname = kwargs['fontname'] if 'fontname' in kwargs.keys() else 'Arial'
     
     # -- Plot --------------------------
+    # Set the font family for all text elements
+    plt.rcParams['font.family'] = fontname    
     fig = plt.figure(figsize=(10, 10))
     #ax = fig.add_subplot(111)
     ax = plt.subplot2grid((4, 4), (0, 0), colspan=3, rowspan=3)
@@ -396,7 +397,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ax1.yaxis.set_tick_params(labelsize=tick_labelsize) 
     # Set tick label font weight
     ax1.set_yticklabels(ax1.get_yticks(), rotation=0, weight=labelweight)    
-    ax1.yaxis.tick_right()
+    #ax1.yaxis.tick_right()
     
     # Set the new tick locations on the x-axis
     ax1.yaxis.set_major_locator(ticker.MaxNLocator(max_ticks))
@@ -405,8 +406,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     # Set tick label font weight
     # Optionally, you can format the tick labels if needed
     ax1.set_yticklabels(ax1.get_yticks(), rotation=0, weight=labelweight)    
-    ax1.set_xticklabels(["{}%".format(int(tick*100)) for tick in ax1.get_xticks()])
-    ax1.set_yticklabels(["{}%".format(int(tick*100)) for tick in ax1.get_yticks()]) 
+    ax1.set_xticklabels(["{}".format(int(tick*100)) for tick in ax1.get_xticks()])
+    ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1.get_yticks()]) 
     
     
     ax2.plot((np.arange(0,1,1/y_unit)-np.arange(0,1,1/y_unit)),np.arange(0,1,1/y_unit),color='Black',linewidth=linewidth)
@@ -421,8 +422,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     # Set tick label font weight
     # Optionally, you can format the tick labels if needed
     ax2.set_xticklabels(ax2.get_xticks(), rotation=0, weight=labelweight)
-    ax2.set_xticklabels(["{}%".format(int(tick*100)) for tick in ax2.get_xticks()])   
-    ax2.set_yticklabels(["{}%".format(int(tick*100)) for tick in ax2.get_yticks()])
+    ax2.set_xticklabels(["{}".format(int(tick*100)) for tick in ax2.get_xticks()])   
+    ax2.set_yticklabels(["{}".format(int(tick*100)) for tick in ax2.get_yticks()])
     
     for axis in ['top', 'bottom', 'left', 'right']:
         ax.spines[axis].set_linewidth(framelinewidth)  # change width
@@ -540,6 +541,11 @@ cmlt_contour_color = ['blue','blue','blue','orange','orange','red','red']
 drvt1_index_x_sets,drvt1_index_y_sets = [],[]
 drvt2_index_x_sets,drvt2_index_y_sets = [],[]
 
+### font family suggestion ###
+import matplotlib.pyplot as plt
+import matplotlib.font_manager
+fontnames = sorted(set([f.name for f in matplotlib.font_manager.fontManager.ttflist]))
+##############################
 
    
 ####################
@@ -553,12 +559,14 @@ if step1:
     dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
     # linewidth
     linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
-    # tick_labelsize
-    tick_labelsize = st.slider('tick label size',1, 40, 20,key ='tick_labelsize')    # 
     # labelweight
     labelweight = st.selectbox('Select an option', ['bold','normal','heavy'],key='labelweight')    #   
     # frame line width
     framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
+    # font family
+    fontname = st.selectbox('Select a font style all the labels', fontnames,key='fontnames')
+    # tick_labelsize
+    tick_labelsize = st.slider('tick label size',1, 40, 20,key ='tick_labelsize')    # 
     
     with st.form("form"):    
         with col1: 
@@ -663,7 +671,8 @@ if step1:
                         dpi_value = dpi_value,
                         linewidth = linewidth,
                         labelweight=labelweight,
-                        framelinewidth=framelinewidth
+                        framelinewidth=framelinewidth,
+                        fontname=fontname
                     )
             
                 else:
@@ -685,7 +694,8 @@ if step1:
                         dpi_value = dpi_value,
                         linewidth = linewidth,
                         labelweight=labelweight,
-                        framelinewidth=framelinewidth
+                        framelinewidth=framelinewidth,
+                        fontname=fontname
                     )
                 
             
@@ -733,7 +743,8 @@ if step1:
                         dpi_value = dpi_value,
                         linewidth = linewidth,
                         labelweight=labelweight,
-                        framelinewidth=framelinewidth
+                        framelinewidth=framelinewidth,
+                        fontname=fontname
                     )
         
                 else:
@@ -755,7 +766,8 @@ if step1:
                         dpi_value = dpi_value,
                         linewidth = linewidth,
                         labelweight=labelweight,
-                        framelinewidth=framelinewidth
+                        framelinewidth=framelinewidth,
+                        fontname=fontname
                         
                     )
                 
