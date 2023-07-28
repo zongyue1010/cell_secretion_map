@@ -433,7 +433,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
 
     
     # Adjust the margins (decrease them)
-    plt.subplots_adjust(left=-0.15, right=0.85, top=1, bottom=0)
+    plt.subplots_adjust(left=-0.15, right=0.85, top=0.95, bottom=-0.05)
     
     # Save the plot as png and pdf files
     plt.savefig('./output/'+timeline+".png",dpi=dpi_value)
