@@ -433,7 +433,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
 
     
     # Adjust the margins (decrease them)
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    plt.subplots_adjust(left=-0.15, right=0.85, top=1, bottom=0)
     
     # Save the plot as png and pdf files
     plt.savefig('./output/'+timeline+".png",dpi=dpi_value)
@@ -565,7 +565,7 @@ if step1:
     # font family
     fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
     # tick_labelsize
-    tick_labelsize = st.slider('tick label size',1, 40, 20,key ='tick_labelsize')    # 
+    tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    # 
     # labelweight
     labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #     
     with st.form("form"):    
