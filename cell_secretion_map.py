@@ -431,14 +431,13 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
         ax2.spines[axis].set_linewidth(framelinewidth)  # change width
         #ax.spines[axis].set_color('red')    # change color
 
-    
+    # Save the plot as png and pdf files
+    plt.savefig('./output/'+timeline+".png",dpi=dpi_value, bbox_inches='tight')
+    plt.savefig('./output/'+timeline+".pdf", format='pdf', bbox_inches='tight')
+
     # Adjust the margins (decrease them)
     plt.subplots_adjust(left=-0.15, right=0.85, top=0.95, bottom=-0.05)
-    
-    # Save the plot as png and pdf files
-    plt.savefig('./output/'+timeline+".png",dpi=dpi_value)
-    plt.savefig('./output/'+timeline+".pdf", format='pdf')
-    
+
     plt.show()
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot(fig)
