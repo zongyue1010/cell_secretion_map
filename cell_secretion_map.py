@@ -559,15 +559,15 @@ if step1:
     dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
     # linewidth
     linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
-    # labelweight
-    labelweight = st.selectbox('Select an option', ['bold','normal','heavy'],key='labelweight')    #   
+
     # frame line width
     framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
     # font family
-    fontname = st.selectbox('Select a font style all the labels', fontnames,key='fontnames')
+    fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
     # tick_labelsize
     tick_labelsize = st.slider('tick label size',1, 40, 20,key ='tick_labelsize')    # 
-    
+    # labelweight
+    labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #     
     with st.form("form"):    
         with col1: 
             drvt1_index_x_sets = []
