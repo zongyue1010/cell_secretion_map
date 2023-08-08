@@ -596,10 +596,15 @@ if step1:
             cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml1')
                    
             # center coordinate
-            df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
-            if ~df1_x.isdigit():
-                df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
-            col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y')
+            if df1.shape[1]>50:
+                df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
+                
+                if ~df1_x.isdigit():
+                    df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
+            else:
+                df1_x,df1_y = 25,25
+                
+            col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y')    
             # diameters
             col1_diameter = st.slider('diameter', 0, 50, 13,key ='1dmt')          
             pixels = (2+col1_diameter)**2
@@ -629,10 +634,16 @@ if step1:
             show_cmlt_contour2 = st.checkbox('show cumulative signal contour line',value=False,key ='show_cmlt_contour2')
 
             cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml2')
+            
             # center coordinate
-            df2_x,df2_y = df2.iloc[0,50],df2.iloc[0,51]
-            if ~df2_x.isdigit():
-                df2_x,df2_y = df2.iloc[1,50],df2.iloc[1,51]        
+            if df2.shape[1]>50:
+                df2_x,df2_y = df2.iloc[0,50],df2.iloc[0,51]
+                
+                if ~df2_x.isdigit():
+                    df2_x,df2_y = df2.iloc[1,50],df2.iloc[1,51]       
+            else:
+                df2_x,df2_y = 25,25
+                
             col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
             col2_diameter = st.slider('diameter', 0, 50, 13,key ='2dmt')           
             pixels = (2+col2_diameter)**2
