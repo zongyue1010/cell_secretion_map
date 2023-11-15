@@ -247,8 +247,8 @@ def GINI_IDX(mtx=[],x_val=[],y_val=[],x_unit=[],y_unit=[]):
     x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit))
     y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit))
     
-    x_inequ_new=np.insert(x_inequ, 0, 0)
-    y_inequ_new=np.insert(y_inequ, 0, 0)
+    x_inequ=np.insert(x_inequ, 0, 0)
+    y_inequ=np.insert(y_inequ, 0, 0)
     
     ### derivative of gini curve ###
     x_drvtv = list(DERIVATIVE(x_inequ,1))
@@ -387,11 +387,9 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     (x_drvtv,y_drvtv) = GINI_IDX(mtx=mtx,x_unit=x_unit,y_unit=y_unit)
 
 
-
     ### plot IDI (index of derivative inequality) ###
     # Set the maximum number of ticks on the x-axis
     max_ticks = 3
-       
     import matplotlib.ticker as ticker
     #ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=linewidth)  
     ax1.plot(np.arange(0,x_unit,1),(np.arange(0,x_unit,1)-np.arange(0,x_unit,1)),color='Black',linewidth=linewidth)  
