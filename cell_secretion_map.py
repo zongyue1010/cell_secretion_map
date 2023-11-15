@@ -241,24 +241,14 @@ def DERIVATIVE(arr, dx):
     return derivative
 
 ### plot inequality ###
-def GINI_IDX(mtx=[],x_val=[],y_val=[],x_unit=[],y_unit=[]):
+def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
     ### lorenz curve ###
     x_val,y_val=mtx.sum(0),mtx.sum(1)
     x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit))
-    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit))
-    
+    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit))    
     x_inequ=np.insert(x_inequ, 0, 0)
     y_inequ=np.insert(y_inequ, 0, 0)
-    
-    ### derivative of gini curve ###
-    x_drvtv = list(DERIVATIVE(x_inequ,1))
-    y_drvtv = list(DERIVATIVE(y_inequ,1))
-    
-    ### first point set to be zero ###
-    #x_drvtv.insert(0,0)
-    #y_drvtv.insert(0,0)
-    
-    return(x_drvtv,y_drvtv)
+    return(x_inequ,y_inequ)
 
 
 
@@ -384,7 +374,10 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     #ax.axis('off')
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
-    (x_drvtv,y_drvtv) = GINI_IDX(mtx=mtx,x_unit=x_unit,y_unit=y_unit)
+    (x_inequ,y_inequ) = GINI_IDX(mtx=mtx,x_unit=x_unit,y_unit=y_unit)
+    ### derivative of gini curve ###
+    x_drvtv = list(DERIVATIVE(x_inequ,1))
+    y_drvtv = list(DERIVATIVE(y_inequ,1))
 
 
     ### plot IDI (index of derivative inequality) ###
@@ -455,7 +448,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     #    save_as_pdf(buffer,timeline+'_figure.pdf')
     if st.download_button("Download PDF"+timeline, data=buffer, file_name=timeline+"figure.pdf", mime="application/pdf"):
         st.success("File download initiated!")
-    return(x_drvtv,y_drvtv,contours,contours_cmltv)  
+    return(x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv)  
 
 def create_zip():
     with zipfile.ZipFile("figures.zip", "w") as zipf:
@@ -672,7 +665,7 @@ if step1:
                     mtx_pre.columns = range(y_start,y_end)
                     mtx_pre.index=range(x_start,x_end)
                     (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                    (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                         mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
                         x_unit = x_end-x_start,y_unit = y_end-y_start,
                         cmlt_contour_color=cmlt_contour_color[i],
@@ -695,7 +688,7 @@ if step1:
                     mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50] 
                     mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
                     (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                    (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                         mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
                         x_unit = x_end-x_start,y_unit = y_end-y_start,
                         cmlt_contour_color=cmlt_contour_color[i],
@@ -767,7 +760,7 @@ if step1:
                     mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50]    
                     mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
                     (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
-                    (x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                    (x_inequ,y_inequ,x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                         mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
                         x_unit = x_end-x_start,y_unit = y_end-y_start,
                         cmlt_contour_color=cmlt_contour_color[i],
