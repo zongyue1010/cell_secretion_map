@@ -252,8 +252,8 @@ def GINI_IDX(mtx=[],x_val=[],y_val=[],x_unit=[],y_unit=[]):
     y_drvtv = list(DERIVATIVE(y_inequ,1))
     
     ### first point set to be zero ###
-    x_drvtv.insert(0,0)
-    y_drvtv.insert(0,0)
+    #x_drvtv.insert(0,0)
+    #y_drvtv.insert(0,0)
     
     return(x_drvtv,y_drvtv)
 
@@ -390,8 +390,9 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     max_ticks = 3
        
     import matplotlib.ticker as ticker
-    ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=linewidth)  
-    ax1.plot(np.arange(0,1,1/x_unit),x_drvtv,linewidth=linewidth)
+    #ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=linewidth)  
+    ax1.plot(np.arange(0.5,x_unit-0.5,1),(np.arange(0.5,x_unit-0.5,1)-np.arange(0.5,x_unit-0.5,1)),color='Black',linewidth=linewidth)  
+    ax1.plot(np.arange(0.5,x_unit-0.5,1),x_drvtv,linewidth=linewidth)
     ax1.xaxis.set_visible(False)
     ax1.yaxis.set_label_position("right")
     ax1.yaxis.set_tick_params(labelsize=tick_labelsize) 
@@ -410,8 +411,9 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1.get_yticks()]) 
     
     
-    ax2.plot((np.arange(0,1,1/y_unit)-np.arange(0,1,1/y_unit)),np.arange(0,1,1/y_unit),color='Black',linewidth=linewidth)
-    ax2.plot(y_drvtv,np.arange(0,1,1/y_unit),linewidth=linewidth)
+    ax2.plot((np.arange(0.5,y_unit-0.5,1)-np.arange(0.5,y_unit-0.5,1)),np.arange(0.5,y_unit-0.5,1),color='Black',linewidth=linewidth)
+    #ax2.plot(y_drvtv,np.arange(0,1,1/y_unit),linewidth=linewidth)
+    ax2.plot(y_drvtv,np.arange(0.5,y_unit-0.5,1),linewidth=linewidth)
     ax2.invert_yaxis()
     ax2.xaxis.set_tick_params(labelsize=tick_labelsize)
     ax2.yaxis.set_visible(False)
@@ -711,8 +713,8 @@ if step1:
                 
             
                 ### Derivative index
-                drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
-                drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:13]) - np.array(y_drvtv[-13:][::-1])])) 
+                drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col1_diameter]) - np.array(x_drvtv[-col1_diameter:][::-1])])) 
+                drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col1_diameter]) - np.array(y_drvtv[-col1_diameter:][::-1])])) 
                 
                 ### contour line export
                 if contours:
@@ -783,8 +785,8 @@ if step1:
                     )
                 
                 ### Derivative index
-                drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:13]) - np.array(x_drvtv[-13:][::-1])])) 
-                drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:13]) - np.array(y_drvtv[-13:][::-1])])) 
+                drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col2_diameter]) - np.array(x_drvtv[-col2_diameter:][::-1])])) 
+                drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col2_diameter]) - np.array(y_drvtv[-col2_diameter:][::-1])])) 
                 
                 ### contour line export
                 if contours:
