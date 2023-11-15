@@ -244,8 +244,11 @@ def DERIVATIVE(arr, dx):
 def GINI_IDX(mtx=[],x_val=[],y_val=[],x_unit=[],y_unit=[]):
     ### lorenz curve ###
     x_val,y_val=mtx.sum(0),mtx.sum(1)
-    x_inequ = ((x_val/x_val.sum()).cumsum()-np.arange(0,1,1/x_unit))
-    y_inequ = ((y_val/y_val.sum()).cumsum()-np.arange(0,1,1/y_unit))
+    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit))
+    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit))
+    
+    x_inequ_new=np.insert(x_inequ, 0, 0)
+    y_inequ_new=np.insert(y_inequ, 0, 0)
     
     ### derivative of gini curve ###
     x_drvtv = list(DERIVATIVE(x_inequ,1))
@@ -391,8 +394,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
        
     import matplotlib.ticker as ticker
     #ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=linewidth)  
-    ax1.plot(np.arange(0.5,x_unit-0.5,1),(np.arange(0.5,x_unit-0.5,1)-np.arange(0.5,x_unit-0.5,1)),color='Black',linewidth=linewidth)  
-    ax1.plot(np.arange(0.5,x_unit-0.5,1),x_drvtv,linewidth=linewidth)
+    ax1.plot(np.arange(0,x_unit,1),(np.arange(0,x_unit,1)-np.arange(0,x_unit,1)),color='Black',linewidth=linewidth)  
+    ax1.plot(np.arange(0,x_unit,1),x_drvtv,linewidth=linewidth)
     ax1.xaxis.set_visible(False)
     ax1.yaxis.set_label_position("right")
     ax1.yaxis.set_tick_params(labelsize=tick_labelsize) 
@@ -411,9 +414,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1.get_yticks()]) 
     
     
-    ax2.plot((np.arange(0.5,y_unit-0.5,1)-np.arange(0.5,y_unit-0.5,1)),np.arange(0.5,y_unit-0.5,1),color='Black',linewidth=linewidth)
-    #ax2.plot(y_drvtv,np.arange(0,1,1/y_unit),linewidth=linewidth)
-    ax2.plot(y_drvtv,np.arange(0.5,y_unit-0.5,1),linewidth=linewidth)
+    ax2.plot(np.arange(0,y_unit,1)-np.arange(0,y_unit,1),np.arange(0,y_unit,1),color='Black',linewidth=linewidth)
+    ax2.plot(y_drvtv,np.arange(0,y_unit,1),linewidth=linewidth)
     ax2.invert_yaxis()
     ax2.xaxis.set_tick_params(labelsize=tick_labelsize)
     ax2.yaxis.set_visible(False)
