@@ -737,7 +737,7 @@ if step1:
                     mtx_pre.columns = range(y_start,y_end)
                     mtx_pre.index=range(x_start,x_end)
                     (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
-                    (x_inequ,y_inequ,x_drvtv,y_drvtv,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                    (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                         mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
                         x_unit = x_end-x_start,y_unit = y_end-y_start,
                         cmlt_contour_color=cmlt_contour_color[i],
