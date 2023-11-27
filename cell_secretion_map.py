@@ -527,7 +527,7 @@ def add_logo(logo_path, width, height):
 st.image(add_logo(logo_path="./aipharm_logo.png", width=400, height=100)) 
 
 st.title('An online interactive analytical platform for cell secretion map generation')
-st.markdown('*Zongliang Yue, Lang Zhou, and Pengyu Chen*')
+st.markdown('*Zongliang Yue, Lang Zhou, Fengyuan Huang and Pengyu Chen*')
 st.header("Comparison of anisotropy and isotropy cell secretion signals")
 
 step1 = st.checkbox('Step 1: show the heatmap and delta changes of the cell signals',value=True)
@@ -593,10 +593,10 @@ if step1:
             # center coordinate
             if df1.shape[1]>50:
                 df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
-                # Correct usage by converting the integer to a string
-                number_str = str(df1_x)
-                if ~number_str.isdigit():
-                    df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
+                ## Correct usage by converting the integer to a string
+                #number_str = str(df1_x)
+                #if ~number_str.isdigit():
+                #    df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
             else:
                 df1_x,df1_y = 25,25
                 
@@ -634,10 +634,10 @@ if step1:
             # center coordinate
             if df2.shape[1]>50:
                 df2_x,df2_y = df2.iloc[0,50],df2.iloc[0,51]
-                # Correct usage by converting the integer to a string
-                number_str = str(df2_x)                
-                if ~number_str.isdigit():
-                    df2_x,df2_y = df2.iloc[1,50],df2.iloc[1,51]       
+                ## Correct usage by converting the integer to a string
+                #number_str = str(df2_x)                
+                #if ~number_str.isdigit():
+                #    df2_x,df2_y = df2.iloc[1,50],df2.iloc[1,51]       
             else:
                 df2_x,df2_y = 25,25
                 
