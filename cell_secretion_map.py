@@ -593,8 +593,9 @@ if step1:
             # center coordinate
             if df1.shape[1]>50:
                 df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
-                
-                if ~df1_x.isdigit():
+                # Correct usage by converting the integer to a string
+                number_str = str(df1_x)
+                if ~number_str.isdigit():
                     df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
             else:
                 df1_x,df1_y = 25,25
@@ -633,8 +634,9 @@ if step1:
             # center coordinate
             if df2.shape[1]>50:
                 df2_x,df2_y = df2.iloc[0,50],df2.iloc[0,51]
-                
-                if ~df2_x.isdigit():
+                # Correct usage by converting the integer to a string
+                number_str = str(df2_x)                
+                if ~number_str.isdigit():
                     df2_x,df2_y = df2.iloc[1,50],df2.iloc[1,51]       
             else:
                 df2_x,df2_y = 25,25
