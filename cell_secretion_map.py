@@ -884,15 +884,15 @@ def plot_time(IL6_21_IDI=[],IL6_15_IDI=[],xlabel = "",ylabel=""):
     ax.plot(range(0,len(IL6_15_IDI),1),IL6_15_IDI,color='blue',label="isotropy")#np.repeat(0,len(IDI))
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_ylim(0,2.5)
+    #ax.set_ylim(0,2.5)
     fig.show() 
     ax.set_xticks([0,1,2,3,4,5])
     ax.set_xticklabels(['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins'])  
     plt.legend(loc="upper right",title='cell type')
     st.set_option('deprecation.showPyplotGlobalUse', False)
     # Adjust the figure size
-    #fig.set_figwidth(5)  # Set the width in inches
-    #fig.set_figheight(5)  # Set the height in inches
+    fig.set_figwidth(5)  # Set the width in inches
+    fig.set_figheight(5)  # Set the height in inches
     st.pyplot(fig)
     
 step2 = st.checkbox('Step 2: show the derivative of inequality index (DII)',value=True)
