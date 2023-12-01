@@ -124,9 +124,9 @@ def plot_3D(mtx, **kwargs):
     #print(delta_dz)
     dz_pre = mtx_pre.values.flatten()
     #cs = ['r', 'g', 'b', 'y', 'c'] * ly   
-    print(xpos.shape)
-    print(ypos.shape)
-    print(dz_pre.shape)
+    #print(xpos.shape)
+    #print(ypos.shape)
+    #print(dz_pre.shape)
     _zpos = zpos   # the starting zpos for each bar
     ax.bar3d(xpos, ypos,_zpos, dx, dy, dz_pre, color='b', shade=True)
     _zpos += dz_pre
@@ -248,6 +248,8 @@ def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
     y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit))    
     x_inequ=np.insert(x_inequ, 0, 0)
     y_inequ=np.insert(y_inequ, 0, 0)
+    x_inequ=np.nan_to_num(x_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
+    y_inequ=np.nan_to_num(y_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
     return(x_inequ,y_inequ)
 
 
@@ -542,6 +544,64 @@ import matplotlib.font_manager
 fontnames = sorted(set([f.name for f in matplotlib.font_manager.fontManager.ttflist]))
 ##############################
 
+### functions ###
+### derivative ###
+def DERIVATIVE(arr, dx):
+    diff = np.diff(arr)    
+    # Divide by dx to approximate the derivative
+    derivative = np.array(diff / dx).round(3)
+    return derivative
+
+### plot inequality ###
+def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
+    ### lorenz curve ###
+    x_val,y_val=mtx.sum(0),mtx.sum(1)
+    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit))
+    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit))    
+    x_inequ=np.insert(x_inequ, 0, 0)
+    y_inequ=np.insert(y_inequ, 0, 0)
+    x_inequ=np.nan_to_num(x_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
+    y_inequ=np.nan_to_num(y_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
+    return(x_inequ,y_inequ)
+
+### generate distance-based weights ###
+def generate_weights(x_drvtv):
+    if len(x_drvtv)%2 == 0:
+        weight_vector=int(len(x_drvtv)/2)
+        weights = np.array((np.linspace(1,weight_vector,weight_vector)))
+        weights=1/np.concatenate((weights[::-1], weights))   
+    else:
+        weight_vector=int(len(x_drvtv)/2)+1
+        weights = np.array((np.linspace(1,weight_vector,weight_vector)))
+        weights=1/np.concatenate((weights[::-1], weights[1:]))
+    return(weights)
+
+### generate center weighted signal-to-noise ratio ###
+def generate_coverageIndex(x_drvtv):
+    if sum(x_drvtv) != 0:
+        ratio = len([x for x in x_drvtv if x > 0])/len([x for x in x_drvtv if x <= 0])
+        weight=generate_weights(x_drvtv)
+        x_drvtv= np.array(x_drvtv)
+        binary = np.where(x_drvtv>0,x_drvtv,0)
+        signal=np.where(np.array(x_drvtv)>0,x_drvtv,0)
+        #centralTendency=np.sum(signal*binary)
+        centralTendency=np.sum(signal*weight*ratio)
+    else:
+        centralTendency = 0
+    return(centralTendency)
+
+def calculate_index(mtx,x_unit,y_unit):
+    (x_inequ,y_inequ) = GINI_IDX(mtx=mtx,x_unit=x_unit,y_unit=y_unit)
+    ### derivative of gini curve ###
+    x_drvtv = list(DERIVATIVE(x_inequ,1))
+    y_drvtv = list(DERIVATIVE(y_inequ,1))
+     # index 1: DI degree of inequality 
+    inequ=(np.abs(x_inequ.sum()) + np.abs(y_inequ.sum()))/2
+    # index 2: CWSNR center weighted signal-to-noise ratio
+    #print(x_drvtv)
+    coverageIndex = (generate_coverageIndex(x_drvtv)+generate_coverageIndex(y_drvtv))/2
+    return(inequ,coverageIndex)
+    
    
 ####################
 ### main content ###
@@ -554,7 +614,6 @@ if step1:
     dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
     # linewidth
     linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
-
     # frame line width
     framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
     # font family
@@ -563,11 +622,13 @@ if step1:
     tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    # 
     # labelweight
     labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #     
+    
     with st.form("form"):    
         with col1: 
             drvt1_index_x_sets = []
             drvt1_index_y_sets = []
-            
+            col1_inequ_set=[]
+            col1_CWSNR_set=[]
             ### IL6 sheet 21 anisotropy
             # List of options for the select box
             #sheet_names1 = ['Sheet21-15max', 'Sheet20','Sheet19','Sheet18','Sheet17-15max','Sheet16','Sheet11','Sheet10-180c','Sheet9-180c',
@@ -594,13 +655,14 @@ if step1:
             if df1.shape[1]>50:
                 df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
                 ## Correct usage by converting the integer to a string
-                #number_str = str(df1_x)
-                #if ~number_str.isdigit():
-                #    df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
+                number_str = str(df1_x)
+                st.write(number_str)
+                if ~number_str.isdigit():
+                    df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
             else:
                 df1_x,df1_y = 25,25
                 
-            col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y')    
+            col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y') 
             # diameters
             col1_diameter = st.slider('diameter', 0, 50, 13,key ='1dmt')          
             pixels = (2+col1_diameter)**2
@@ -611,6 +673,8 @@ if step1:
         with col2:
             drvt2_index_x_sets = []
             drvt2_index_y_sets = []
+            col2_inequ_set=[]
+            col2_CWSNR_set=[]
             ### IL6 sheet 15 anisotropy
             # List of options for the select box
             sheet_names2 = sheet_names
@@ -635,9 +699,9 @@ if step1:
             if df2.shape[1]>50:
                 df2_x,df2_y = df2.iloc[0,50],df2.iloc[0,51]
                 ## Correct usage by converting the integer to a string
-                #number_str = str(df2_x)                
-                #if ~number_str.isdigit():
-                #    df2_x,df2_y = df2.iloc[1,50],df2.iloc[1,51]       
+                number_str = str(df2_x)                
+                if ~number_str.isdigit():
+                    df2_x,df2_y = df2.iloc[1,50],df2.iloc[1,51]       
             else:
                 df2_x,df2_y = 25,25
                 
@@ -646,7 +710,6 @@ if step1:
             pixels = (2+col2_diameter)**2
             hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
             (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
-
             
         submitted = st.form_submit_button("generate and compare!")              
 
@@ -710,7 +773,8 @@ if step1:
                 ### Derivative index
                 drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col1_diameter]) - np.array(x_drvtv[-col1_diameter:][::-1])])) 
                 drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col1_diameter]) - np.array(y_drvtv[-col1_diameter:][::-1])])) 
-                
+
+
                 ### contour line export
                 if contours:
                     contours_df = get_contourline_df(contours)
@@ -720,14 +784,21 @@ if step1:
                     contours_cmltv_df = get_contourline_df(contours_cmltv)
                     contours_cmltv_df['time'] = timeline[i]
                     contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
-     
+
+                ### calculate 
+                inequ,CWSNR=calculate_index(mtx,col1_diameter*2,col1_diameter*2)
+                col1_inequ_set.append(inequ)
+                col1_CWSNR_set.append(CWSNR) 
+            
             st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
             st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
-                
+              
                 
         with col2_:      
             contours_dfs = pd.DataFrame()
             contours_cmltv_dfs = pd.DataFrame()
+
+            
             df=df2
             (x_start,x_end,y_start,y_end) = (col2_center_x-col2_diameter,col2_center_x+col2_diameter,col2_center_y-col2_diameter,col2_center_y+col2_diameter)
             for i in range(1,7,1):
@@ -793,6 +864,10 @@ if step1:
                     contours_cmltv_df['time'] = timeline[i]
                     contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
  
+                ### calculate 
+                inequ,CWSNR=calculate_index(mtx,col2_diameter*2,col2_diameter*2)
+                col2_inequ_set.append(inequ)
+                col2_CWSNR_set.append(CWSNR) 
                 
             st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
             st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
@@ -802,13 +877,13 @@ if step1:
     with open("figures.zip", "rb") as f:
         st.download_button("Download Figures", f.read(), file_name="figures.zip")
         
-def plot_time(IL6_21_IDI=[],IL6_15_IDI=[]):
+def plot_time(IL6_21_IDI=[],IL6_15_IDI=[],xlabel = "",ylabel=""):
     fig = plt.figure(figsize=(5, 5))
     ax = fig.add_subplot(111)
     ax.plot(range(0,len(IL6_21_IDI),1),IL6_21_IDI,color='red',label="anisotropy")#np.repeat(0,len(IDI))
     ax.plot(range(0,len(IL6_15_IDI),1),IL6_15_IDI,color='blue',label="isotropy")#np.repeat(0,len(IDI))
-    ax.set_xlabel('time')
-    ax.set_ylabel('DII')
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
     ax.set_ylim(0,2.5)
     fig.show() 
     ax.set_xticks([0,1,2,3,4,5])
@@ -816,8 +891,8 @@ def plot_time(IL6_21_IDI=[],IL6_15_IDI=[]):
     plt.legend(loc="upper right",title='cell type')
     st.set_option('deprecation.showPyplotGlobalUse', False)
     # Adjust the figure size
-    fig.set_figwidth(5)  # Set the width in inches
-    fig.set_figheight(5)  # Set the height in inches
+    #fig.set_figwidth(5)  # Set the width in inches
+    #fig.set_figheight(5)  # Set the height in inches
     st.pyplot(fig)
     
 step2 = st.checkbox('Step 2: show the derivative of inequality index (DII)',value=True)
@@ -828,13 +903,23 @@ if step2:
     _end = 3
     col1__, col2__ = st.columns(2)
     with col1__:
-        plot_time(IL6_21_IDI=DII1,IL6_15_IDI=DII2)
+        plot_time(IL6_21_IDI=DII1,IL6_15_IDI=DII2,xlabel='time',ylabel="DII")
+        plot_time(IL6_21_IDI=col1_inequ_set,IL6_15_IDI=col2_inequ_set,xlabel='time',ylabel="ADI")
+        plot_time(IL6_21_IDI=col1_CWSNR_set,IL6_15_IDI=col2_CWSNR_set,xlabel='time',ylabel="CWSNR")
     with col2__:   
         table=pd.DataFrame({'anisotropy':DII1,'isotropy':DII2})
+        table_inequ=pd.DataFrame({'anisotropy':col1_inequ_set,'isotropy':col2_inequ_set})
+        table_CWSNR=pd.DataFrame({'anisotropy':col1_CWSNR_set,'isotropy':col2_CWSNR_set})
         try:
             table.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']  
             st.write(table)
             st.markdown(get_table_download_link(table, fileName = "DII_comparison"), unsafe_allow_html=True)
+            table_inequ.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins'] 
+            st.write(table_inequ)
+            st.markdown(get_table_download_link(table_inequ, fileName = "ADI_comparison"), unsafe_allow_html=True)
+            table_CWSNR.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins'] 
+            st.write(table_CWSNR)
+            st.markdown(get_table_download_link(table_CWSNR, fileName = "CWSNR_comparison"), unsafe_allow_html=True)            
         except:
             st.write("")
             
