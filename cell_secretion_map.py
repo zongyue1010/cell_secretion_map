@@ -577,15 +577,15 @@ def generate_weights(x_drvtv):
     return(weights)
 
 ### generate center weighted signal-to-noise ratio ###
-def generate_coverageIndex(x_drvtv):
-    if sum(x_drvtv) != 0:
-        ratio = len([x for x in x_drvtv if x > 0])/len([x for x in x_drvtv if x <= 0])
-        weight=generate_weights(x_drvtv)
-        x_drvtv= np.array(x_drvtv)
-        binary = np.where(x_drvtv>0,x_drvtv,0)
+def generate_coverageIndex(x_drvtv):  
+    ratio = len([x for x in x_drvtv if x > 0])/len([x for x in x_drvtv if x <= 0])
+    weight=generate_weights(x_drvtv)
+    x_drvtv= np.array(x_drvtv)
+    binary = np.where(x_drvtv>0,x_drvtv,0)
+    if sum(binary) != 0:
         signal=np.where(np.array(x_drvtv)>0,x_drvtv,0)
         #centralTendency=np.sum(signal*binary)
-        centralTendency=np.sum(signal*weight*ratio)
+        centralTendency=np.sum(signal*ratio*weight)
     else:
         centralTendency = 0
     return(centralTendency)
