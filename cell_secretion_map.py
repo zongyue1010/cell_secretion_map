@@ -636,13 +636,7 @@ if step1:
             
             ### parameters ###
             # show node number set
-            hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = 
-            st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),
-            st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),
-            st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),
-            st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),
-            st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),
-            st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')      
+            hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')
             # show arrow density
             densityYN1 = st.checkbox('show arrow',value=False,key ='densityYN1')
             density1 = st.slider('Arrow density', 0.0, 10.0, 1.0,key ='density1') 
@@ -685,12 +679,7 @@ if step1:
             
             ### parameters ###
             # show node number set
-            hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs2_5'),
-            st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs2_10'),
-            st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs2_15'),
-            st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs2_20'),
-            st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs2_25'),
-            st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs2_30')
+            hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs2_30')
             # show arrow density
             densityYN2 = st.checkbox('show arrow',value=False,key ='densityYN2')
             density2 = st.slider('streamplot arrow density', 0.0, 10.0, 1.0,key ='density2')
