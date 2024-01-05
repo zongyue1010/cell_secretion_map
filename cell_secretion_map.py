@@ -1,6 +1,4 @@
-
 ### error debug ###
-
 
 # pip install -U click==8
 import streamlit as st
@@ -11,15 +9,11 @@ import os
 import re
 import matplotlib
 import matplotlib.pyplot as plt
-#import generateheatmap as Heatmap
-#import generateNetwork as Network
 import plotly.tools
 import random
-import plotly.express as px  
 import json
 
 from streamlit_cropper import st_cropper
-#from PIL import Image
 from plotly import graph_objs as go
 from plotly.subplots import make_subplots
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode, GridUpdateMode
@@ -37,11 +31,10 @@ from scipy import stats
 import requests
 from st_aggrid import GridUpdateMode, DataReturnMode
 from plotly.graph_objs import Figure
-#from sklearn.preprocessing import LabelEncoder
 from plotly.callbacks import Points, InputDeviceState
 global value_counts
 
-### color registeration ###
+### color registration ###
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -135,6 +128,7 @@ def plot_3D(mtx, **kwargs):
     azim = 120
     elev = 70
     dist = 10
+
     if azim is not None:
         ax.azim = azim
     if dist is not None:
@@ -175,8 +169,8 @@ def plot_3D(mtx, **kwargs):
                            linewidth=0)  
     # Customize the z axis.
     #ax.set_zlim(-Bound, Bound)
-    ax2.zaxis.set_major_locator(LinearLocator(10))
-    ax2.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+    ax2.zaxis.set_major_locator(LinearLocator(6))
+    ax2.zaxis.set_major_formatter(FormatStrFormatter('%d'))
     if azim is not None:
         ax2.azim = azim
     if dist is not None:
@@ -530,13 +524,14 @@ st.image(add_logo(logo_path="./aipharm_logo.png", width=400, height=100))
 
 st.title('An online interactive analytical platform for cell secretion map generation')
 st.markdown('*Zongliang Yue, Lang Zhou, Fengyuan Huang and Pengyu Chen*')
-st.header("Comparison of anisotropy and isotropy cell secretion signals")
+st.header("Comparison of the cell secretion signals")
 
 step1 = st.checkbox('Step 1: show the heatmap and delta changes of the cell signals',value=True)
 cmlt_contour_color = ['blue','blue','blue','orange','orange','red','red']
 
 drvt1_index_x_sets,drvt1_index_y_sets = [],[]
 drvt2_index_x_sets,drvt2_index_y_sets = [],[]
+selected_option1,selected_option2 = "",""
 
 ### font family suggestion ###
 import matplotlib.pyplot as plt
@@ -564,17 +559,19 @@ def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
     y_inequ=np.nan_to_num(y_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
     return(x_inequ,y_inequ)
 
-### generate distance-based weights ###
+### generate center weights ###
 def generate_weights(x_drvtv):
     if len(x_drvtv)%2 == 0:
-        weight_vector=int(len(x_drvtv)/2)
-        weights = np.array((np.linspace(1,weight_vector,weight_vector)))
-        weights=1/np.concatenate((weights[::-1], weights))   
+        radius = int(len(x_drvtv)/2)
+        distance = np.array((np.linspace(1,radius,radius)))
+        weight_vector = sqrt(1.0-(distance/np.max(distance))**2)
+        weight_vector = np.concatenate((weight_vector[::-1],weight_vector))
     else:
-        weight_vector=int(len(x_drvtv)/2)+1
-        weights = np.array((np.linspace(1,weight_vector,weight_vector)))
-        weights=1/np.concatenate((weights[::-1], weights[1:]))
-    return(weights)
+        radius=int(len(x_drvtv)/2)+1
+        distance = np.array((np.linspace(0,radius-1,radius)))
+        weight_vector = sqrt(1.0-(distance/np.max(distance))**2)
+        weight_vector = np.concatenate((weight_vector[::-1],weight_vector[1:]))
+    return(weight_vector)
 
 ### generate center weighted signal-to-noise ratio ###
 def generate_coverageIndex(x_drvtv):  
@@ -639,7 +636,13 @@ if step1:
             
             ### parameters ###
             # show node number set
-            hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')      
+            hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = 
+            st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),
+            st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),
+            st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),
+            st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),
+            st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),
+            st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')      
             # show arrow density
             densityYN1 = st.checkbox('show arrow',value=False,key ='densityYN1')
             density1 = st.slider('Arrow density', 0.0, 10.0, 1.0,key ='density1') 
@@ -656,7 +659,6 @@ if step1:
                 df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
                 ## Correct usage by converting the integer to a string
                 number_str = str(df1_x)
-                st.write(number_str)
                 if ~number_str.isdigit():
                     df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
             else:
@@ -683,7 +685,12 @@ if step1:
             
             ### parameters ###
             # show node number set
-            hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 0,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 0,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10,5,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 10,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 10,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 10,key ='hs2_30')
+            hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs2_5'),
+            st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs2_10'),
+            st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs2_15'),
+            st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs2_20'),
+            st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs2_25'),
+            st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs2_30')
             # show arrow density
             densityYN2 = st.checkbox('show arrow',value=False,key ='densityYN2')
             density2 = st.slider('streamplot arrow density', 0.0, 10.0, 1.0,key ='density2')
@@ -706,6 +713,7 @@ if step1:
                 df2_x,df2_y = 25,25
                 
             col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
+            
             col2_diameter = st.slider('diameter', 0, 50, 13,key ='2dmt')           
             pixels = (2+col2_diameter)**2
             hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
@@ -877,11 +885,11 @@ if step1:
     with open("figures.zip", "rb") as f:
         st.download_button("Download Figures", f.read(), file_name="figures.zip")
         
-def plot_time(IL6_21_IDI=[],IL6_15_IDI=[],xlabel = "",ylabel=""):
+def plot_time(IL6_21_IDI=[],IL6_15_IDI=[],xlabel = "",ylabel="",):
     fig = plt.figure(figsize=(5, 5))
     ax = fig.add_subplot(111)
-    ax.plot(range(0,len(IL6_21_IDI),1),IL6_21_IDI,color='red',label="anisotropy")#np.repeat(0,len(IDI))
-    ax.plot(range(0,len(IL6_15_IDI),1),IL6_15_IDI,color='blue',label="isotropy")#np.repeat(0,len(IDI))
+    ax.plot(range(0,len(IL6_21_IDI),1),IL6_21_IDI,color='red',label=selected_option1)#np.repeat(0,len(IDI))
+    ax.plot(range(0,len(IL6_15_IDI),1),IL6_15_IDI,color='blue',label=selected_option2)#np.repeat(0,len(IDI))
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     #ax.set_ylim(0,2.5)
@@ -895,7 +903,7 @@ def plot_time(IL6_21_IDI=[],IL6_15_IDI=[],xlabel = "",ylabel=""):
     fig.set_figheight(5)  # Set the height in inches
     st.pyplot(fig)
     
-step2 = st.checkbox('Step 2: show the derivative of inequality index (DII)',value=True)
+step2 = st.checkbox('Step 2: show the measurement of the dissymmetry and diffusion of cumulative signals using Degree of Inequality Index (DII) and Center-weighted signal-to-noise ratio (CWSNR)',value=True)
 if step2:
     DII1=np.sqrt(np.array(drvt1_index_x_sets)**2+np.array(drvt1_index_y_sets)**2)
     DII2=np.sqrt(np.array(drvt2_index_x_sets)**2+np.array(drvt2_index_y_sets)**2)
@@ -903,20 +911,20 @@ if step2:
     _end = 3
     col1__, col2__ = st.columns(2)
     with col1__:
-        plot_time(IL6_21_IDI=DII1,IL6_15_IDI=DII2,xlabel='time',ylabel="DII")
-        plot_time(IL6_21_IDI=col1_inequ_set,IL6_15_IDI=col2_inequ_set,xlabel='time',ylabel="ADI")
+        #plot_time(IL6_21_IDI=DII1,IL6_15_IDI=DII2,xlabel='time',ylabel="DII")
+        plot_time(IL6_21_IDI=col1_inequ_set,IL6_15_IDI=col2_inequ_set,xlabel='time',ylabel="DII")
         plot_time(IL6_21_IDI=col1_CWSNR_set,IL6_15_IDI=col2_CWSNR_set,xlabel='time',ylabel="CWSNR")
     with col2__:   
-        table=pd.DataFrame({'anisotropy':DII1,'isotropy':DII2})
-        table_inequ=pd.DataFrame({'anisotropy':col1_inequ_set,'isotropy':col2_inequ_set})
-        table_CWSNR=pd.DataFrame({'anisotropy':col1_CWSNR_set,'isotropy':col2_CWSNR_set})
+        #table=pd.DataFrame({selected_option1:DII1,selected_option2:DII2})
+        table_inequ=pd.DataFrame({selected_option1:col1_inequ_set,selected_option2:col2_inequ_set})
+        table_CWSNR=pd.DataFrame({selected_option1:col1_CWSNR_set,selected_option2:col2_CWSNR_set})
         try:
-            table.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']  
-            st.write(table)
-            st.markdown(get_table_download_link(table, fileName = "DII_comparison"), unsafe_allow_html=True)
+            #table.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']  
+            #st.write(table)
+            #st.markdown(get_table_download_link(table, fileName = "DII_comparison"), unsafe_allow_html=True)
             table_inequ.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins'] 
             st.write(table_inequ)
-            st.markdown(get_table_download_link(table_inequ, fileName = "ADI_comparison"), unsafe_allow_html=True)
+            st.markdown(get_table_download_link(table_inequ, fileName = "DII_comparison"), unsafe_allow_html=True)
             table_CWSNR.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins'] 
             st.write(table_CWSNR)
             st.markdown(get_table_download_link(table_CWSNR, fileName = "CWSNR_comparison"), unsafe_allow_html=True)            
