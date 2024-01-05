@@ -523,7 +523,7 @@ def add_logo(logo_path, width, height):
 st.image(add_logo(logo_path="./aipharm_logo.png", width=400, height=100)) 
 
 st.title('An online interactive analytical platform for cell secretion map generation')
-st.markdown('*Zongliang Yue, Lang Zhou, Fengyuan Huang and Pengyu Chen*')
+
 st.header("Comparison of the cell secretion signals")
 
 step1 = st.checkbox('Step 1: show the heatmap and delta changes of the cell signals',value=True)
@@ -920,3 +920,10 @@ if step2:
         except:
             st.write("")
             
+# Add a footer
+st.header('Cite us:')
+
+st.markdown(f"\n*Zongliang Yue\*, Lang Zhou, Fengyuan Huang and Pengyu Chen\**, S2Map: An online interactive analytical platform for cell secretion map generation, under review.")
+st.header('About us:')
+st.write(f"If you have questions or comments about the database contents or technical support,, please email Dr. Zongliang Yue, zzy0065@auburn.edu")
+st.write("Our Research group: AI.pharm, Auburn University, Auburn, USA. https://github.com/ai-pharm-AU")
