@@ -568,6 +568,7 @@ def generate_weights(x_drvtv):
 def generate_coverageIndex(x_drvtv):  
     ratio = len([x for x in x_drvtv if x > 0])/len([x for x in x_drvtv if x <= 0])
     weight=generate_weights(x_drvtv)
+    
     x_drvtv= np.array(x_drvtv)
     binary = np.where(x_drvtv>0,x_drvtv,0)
     if sum(binary) != 0:
