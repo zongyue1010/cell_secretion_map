@@ -584,7 +584,7 @@ def calculate_index(mtx,x_unit,y_unit):
     x_drvtv = list(DERIVATIVE(x_inequ,1))
     y_drvtv = list(DERIVATIVE(y_inequ,1))
     # index 1: DII degree of inequality index
-    inequ = np.sqrt((x_inequ.mean()/2)**2 + (y_inequ.mean()/2)**2)
+    inequ = np.sqrt((x_inequ.mean()*2)**2 + (y_inequ.mean()*2)**2)
     # index 2: CWSNR center weighted signal-to-noise ratio
     #print(x_drvtv)
     coverageIndex = np.sqrt(generate_coverageIndex(x_drvtv)**2+generate_coverageIndex(y_drvtv)**2)
