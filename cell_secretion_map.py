@@ -138,15 +138,7 @@ def plot_3D(mtx, **kwargs):
     ax.set_xlabel('x-axis')
     ax.set_ylabel('y-axis')
     ax.invert_xaxis()
-    #sh()
-    #ax.xaxis.set_ticklabels(mtx.columns) #w_xaxis.set_ticklabels
-    #ax.yaxis.set_ticklabels(mtx.index)
-    #ax.set_xlabel('Letter')
-    #ax.set_ylabel('Day')
-    #ax.set_zlabel('Occurrence')
-        
-    #plt.savefig('./myplot.png')
-    #plt.close()
+
     
     ################################
     ### 3D terrain delta changes ###
@@ -229,6 +221,7 @@ def GET_MASK(z=[],top=50,btm=50):
     return(mask,mask_top,mask_btm)
 
 def DERIVATIVE(arr, dx):
+    arr=np.insert(arr, 0, 0)
     diff = np.diff(arr)    
     # Divide by dx to approximate the derivative
     derivative = diff / dx
@@ -240,8 +233,6 @@ def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
     x_val,y_val=mtx.sum(0),mtx.sum(1)
     x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit))
     y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit))    
-    x_inequ=np.insert(x_inequ, 0, 0)
-    y_inequ=np.insert(y_inequ, 0, 0)
     x_inequ=np.nan_to_num(x_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
     y_inequ=np.nan_to_num(y_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
     return(x_inequ,y_inequ)
@@ -592,11 +583,11 @@ def calculate_index(mtx,x_unit,y_unit):
     ### derivative of gini curve ###
     x_drvtv = list(DERIVATIVE(x_inequ,1))
     y_drvtv = list(DERIVATIVE(y_inequ,1))
-     # index 1: DI degree of inequality 
-    inequ=(np.abs(x_inequ.sum()) + np.abs(y_inequ.sum()))/2
+    # index 1: DII degree of inequality index
+    inequ = np.sqrt((x_inequ.mean()/2)**2 + (y_inequ.mean()/2)**2)
     # index 2: CWSNR center weighted signal-to-noise ratio
     #print(x_drvtv)
-    coverageIndex = (generate_coverageIndex(x_drvtv)+generate_coverageIndex(y_drvtv))/2
+    coverageIndex = np.sqrt(generate_coverageIndex(x_drvtv)**2+generate_coverageIndex(y_drvtv)**2)
     return(inequ,coverageIndex)
     
    
