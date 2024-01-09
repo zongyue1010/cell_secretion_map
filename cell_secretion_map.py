@@ -433,7 +433,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ## Add a button to save as PDF
     #if st.button('Save as PDF '+timeline):
     #    save_as_pdf(buffer,timeline+'_figure.pdf')
-    if st.download_button("Download PDF"+timeline, data=buffer, file_name=timeline+"figure.pdf", mime="application/pdf"):
+    if st.download_button("Download PDF "+timeline, data=buffer, file_name=timeline+"_figure.pdf", mime="application/pdf"):
         st.success("File download initiated!")
     return(x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv)  
 
@@ -630,14 +630,14 @@ if step1:
             # show node number set
             hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')
             # show arrow density
-            densityYN1 = st.checkbox('show arrow',value=False,key ='densityYN1')
+            densityYN1 = st.checkbox('Show arrow',value=False,key ='densityYN1')
             density1 = st.slider('Arrow density', 0.0, 10.0, 1.0,key ='density1') 
 
             # countour line 
-            show_contour1 = st.checkbox('show signal contour line',value=False,key ='show_contour1')         
+            show_contour1 = st.checkbox('Show signal contour line',value=False,key ='show_contour1')         
             
             # countour line of cumulative
-            show_cmlt_contour1 = st.checkbox('show cumulative signal contour line',value=False,key ='show_cmlt_contour1')
+            show_cmlt_contour1 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour1')
             cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml1')
                    
             # center coordinate
@@ -651,9 +651,9 @@ if step1:
                 df1_x,df1_y = 25,25
                 
             col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y') 
-            # diameters
-            col1_diameter = st.slider('diameter', 0, 50, 13,key ='1dmt')          
-            pixels = (2+col1_diameter)**2
+            # radius
+            col1_radius = st.slider('radius', 0, 50, 13,key ='1dmt')          
+            pixels = (2+col1_radius)**2
             hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
             (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
             
@@ -673,13 +673,13 @@ if step1:
             # show node number set
             hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs2_30')
             # show arrow density
-            densityYN2 = st.checkbox('show arrow',value=False,key ='densityYN2')
-            density2 = st.slider('streamplot arrow density', 0.0, 10.0, 1.0,key ='density2')
+            densityYN2 = st.checkbox('Show arrow',value=False,key ='densityYN2')
+            density2 = st.slider('Arrow density', 0.0, 10.0, 1.0,key ='density2')
             
             # countour line 
-            show_contour2 = st.checkbox('show signal contour line',value=False,key ='show_contour2')            
+            show_contour2 = st.checkbox('Show signal contour line',value=False,key ='show_contour2')            
             # countour line of culmulative
-            show_cmlt_contour2 = st.checkbox('show cumulative signal contour line',value=False,key ='show_cmlt_contour2')
+            show_cmlt_contour2 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour2')
 
             cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml2')
             
@@ -695,8 +695,8 @@ if step1:
                 
             col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
             
-            col2_diameter = st.slider('diameter', 0, 50, 13,key ='2dmt')           
-            pixels = (2+col2_diameter)**2
+            col2_radius = st.slider('radius', 0, 50, 13,key ='2dmt')           
+            pixels = (2+col2_radius)**2
             hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
             (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
             
@@ -709,7 +709,7 @@ if step1:
             contours_dfs = pd.DataFrame()
             contours_cmltv_dfs = pd.DataFrame()
             df=df1
-            (x_start,x_end,y_start,y_end) = (col1_center_x-col1_diameter,col1_center_x+col1_diameter,col1_center_y-col1_diameter,col1_center_y+col1_diameter)
+            (x_start,x_end,y_start,y_end) = (col1_center_x-col1_radius,col1_center_x+col1_radius,col1_center_y-col1_radius,col1_center_y+col1_radius)
             for i in range(1,7,1):
                 mtx = df.iloc[i*50:(i+1)*50,0:50]
                 mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
@@ -760,8 +760,8 @@ if step1:
                 
             
                 ### Derivative index
-                drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col1_diameter]) - np.array(x_drvtv[-col1_diameter:][::-1])])) 
-                drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col1_diameter]) - np.array(y_drvtv[-col1_diameter:][::-1])])) 
+                drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col1_radius]) - np.array(x_drvtv[-col1_radius:][::-1])])) 
+                drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col1_radius]) - np.array(y_drvtv[-col1_radius:][::-1])])) 
 
 
                 ### contour line export
@@ -775,7 +775,7 @@ if step1:
                     contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
 
                 ### calculate 
-                inequ,CWSNR=calculate_index(mtx,col1_diameter*2,col1_diameter*2)
+                inequ,CWSNR=calculate_index(mtx,col1_radius*2,col1_radius*2)
                 col1_inequ_set.append(inequ)
                 col1_CWSNR_set.append(CWSNR) 
             
@@ -789,7 +789,7 @@ if step1:
 
             
             df=df2
-            (x_start,x_end,y_start,y_end) = (col2_center_x-col2_diameter,col2_center_x+col2_diameter,col2_center_y-col2_diameter,col2_center_y+col2_diameter)
+            (x_start,x_end,y_start,y_end) = (col2_center_x-col2_radius,col2_center_x+col2_radius,col2_center_y-col2_radius,col2_center_y+col2_radius)
             for i in range(1,7,1):
                 mtx = df.iloc[i*50:(i+1)*50,0:50]
                 mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
@@ -840,8 +840,8 @@ if step1:
                     )
                 
                 ### Derivative index
-                drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col2_diameter]) - np.array(x_drvtv[-col2_diameter:][::-1])])) 
-                drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col2_diameter]) - np.array(y_drvtv[-col2_diameter:][::-1])])) 
+                drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col2_radius]) - np.array(x_drvtv[-col2_radius:][::-1])])) 
+                drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col2_radius]) - np.array(y_drvtv[-col2_radius:][::-1])])) 
                 
                 ### contour line export
                 if contours:
@@ -854,7 +854,7 @@ if step1:
                     contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
  
                 ### calculate 
-                inequ,CWSNR=calculate_index(mtx,col2_diameter*2,col2_diameter*2)
+                inequ,CWSNR=calculate_index(mtx,col2_radius*2,col2_radius*2)
                 col2_inequ_set.append(inequ)
                 col2_CWSNR_set.append(CWSNR) 
                 
