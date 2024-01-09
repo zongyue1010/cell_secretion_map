@@ -651,9 +651,9 @@ if step1:
                 df1_x,df1_y = 25,25
                 
             col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y') 
-            # radius
-            col1_radius = st.slider('radius', 0, 50, 13,key ='1dmt')          
-            pixels = (2+col1_radius)**2
+            # apothem
+            col1_apothem = st.slider('apothem', 0, 50, 13,key ='1dmt')          
+            pixels = (2+col1_apothem)**2
             hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
             (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
             
@@ -695,8 +695,8 @@ if step1:
                 
             col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
             
-            col2_radius = st.slider('radius', 0, 50, 13,key ='2dmt')           
-            pixels = (2+col2_radius)**2
+            col2_apothem = st.slider('apothem', 0, 50, 13,key ='2dmt')           
+            pixels = (2+col2_apothem)**2
             hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
             (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
             
@@ -709,7 +709,7 @@ if step1:
             contours_dfs = pd.DataFrame()
             contours_cmltv_dfs = pd.DataFrame()
             df=df1
-            (x_start,x_end,y_start,y_end) = (col1_center_x-col1_radius,col1_center_x+col1_radius,col1_center_y-col1_radius,col1_center_y+col1_radius)
+            (x_start,x_end,y_start,y_end) = (col1_center_x-col1_apothem,col1_center_x+col1_apothem,col1_center_y-col1_apothem,col1_center_y+col1_apothem)
             for i in range(1,7,1):
                 mtx = df.iloc[i*50:(i+1)*50,0:50]
                 mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
@@ -760,8 +760,8 @@ if step1:
                 
             
                 ### Derivative index
-                drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col1_radius]) - np.array(x_drvtv[-col1_radius:][::-1])])) 
-                drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col1_radius]) - np.array(y_drvtv[-col1_radius:][::-1])])) 
+                drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col1_apothem]) - np.array(x_drvtv[-col1_apothem:][::-1])])) 
+                drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col1_apothem]) - np.array(y_drvtv[-col1_apothem:][::-1])])) 
 
 
                 ### contour line export
@@ -775,7 +775,7 @@ if step1:
                     contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
 
                 ### calculate 
-                inequ,CWSNR=calculate_index(mtx,col1_radius*2,col1_radius*2)
+                inequ,CWSNR=calculate_index(mtx,col1_apothem*2,col1_apothem*2)
                 col1_inequ_set.append(inequ)
                 col1_CWSNR_set.append(CWSNR) 
             
@@ -789,7 +789,7 @@ if step1:
 
             
             df=df2
-            (x_start,x_end,y_start,y_end) = (col2_center_x-col2_radius,col2_center_x+col2_radius,col2_center_y-col2_radius,col2_center_y+col2_radius)
+            (x_start,x_end,y_start,y_end) = (col2_center_x-col2_apothem,col2_center_x+col2_apothem,col2_center_y-col2_apothem,col2_center_y+col2_apothem)
             for i in range(1,7,1):
                 mtx = df.iloc[i*50:(i+1)*50,0:50]
                 mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
@@ -840,8 +840,8 @@ if step1:
                     )
                 
                 ### Derivative index
-                drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col2_radius]) - np.array(x_drvtv[-col2_radius:][::-1])])) 
-                drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col2_radius]) - np.array(y_drvtv[-col2_radius:][::-1])])) 
+                drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col2_apothem]) - np.array(x_drvtv[-col2_apothem:][::-1])])) 
+                drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col2_apothem]) - np.array(y_drvtv[-col2_apothem:][::-1])])) 
                 
                 ### contour line export
                 if contours:
@@ -854,7 +854,7 @@ if step1:
                     contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
  
                 ### calculate 
-                inequ,CWSNR=calculate_index(mtx,col2_radius*2,col2_radius*2)
+                inequ,CWSNR=calculate_index(mtx,col2_apothem*2,col2_apothem*2)
                 col2_inequ_set.append(inequ)
                 col2_CWSNR_set.append(CWSNR) 
                 
