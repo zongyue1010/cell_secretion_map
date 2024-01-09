@@ -631,7 +631,7 @@ if step1:
             hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')
             # show arrow density
             densityYN1 = st.checkbox('Show arrow',value=False,key ='densityYN1')
-            density1 = st.slider('Arrow density', 0.0, 10.0, 1.0,key ='density1') 
+            density1 = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density1') 
 
             # countour line 
             show_contour1 = st.checkbox('Show signal contour line',value=False,key ='show_contour1')         
@@ -674,7 +674,7 @@ if step1:
             hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs2_30')
             # show arrow density
             densityYN2 = st.checkbox('Show arrow',value=False,key ='densityYN2')
-            density2 = st.slider('Arrow density', 0.0, 10.0, 1.0,key ='density2')
+            density2 = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density2')
             
             # countour line 
             show_contour2 = st.checkbox('Show signal contour line',value=False,key ='show_contour2')            
@@ -700,7 +700,7 @@ if step1:
             hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
             (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
             
-        submitted = st.form_submit_button("generate and compare!")              
+        submitted = st.form_submit_button("Generate and compare!")              
 
     if submitted:
 
