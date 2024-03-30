@@ -932,8 +932,6 @@ def Real_world():
         except:
             st.write("")
             
-
-import utils
 def upload():
     st.markdown("## Data Upload")
     # Upload the dataset and save as csv
