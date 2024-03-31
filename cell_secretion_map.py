@@ -569,6 +569,12 @@ def plot_time(IL6_21_IDI=[],IL6_15_IDI=[],xlabel = "",ylabel="",selected_option1
     fig.set_figheight(5)  # Set the height in inches
     st.pyplot(fig)
 
+
+def generate_colors(n):
+    cmap = plt.get_cmap('tab10')  # Choose a colormap, e.g., 'tab10' which has 10 distinct colors
+    colors = [cmap(i) for i in np.linspace(0, 1, n)]
+    return colors
+    
 ####################################################
 ### load the object and generate the coordincate ###
 ####################################################
@@ -685,8 +691,10 @@ def Real_world():
                     df1_x,df1_y = 25,25
                     
                 col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y') 
+
+                min_1=np.int32(np.min([df1_x, 50-df1_x,df1_y,50-df1_y]))
                 # apothem
-                col1_apothem = st.slider('apothem', 0, 50, 13,key ='1dmt')          
+                col1_apothem = st.slider('apothem', 0, min_1, min_1,key ='1dmt')          
                 pixels = (2+col1_apothem)**2
                 hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
                 (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
@@ -728,8 +736,8 @@ def Real_world():
                     df2_x,df2_y = 25,25
                     
                 col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
-                
-                col2_apothem = st.slider('apothem', 0, 50, 13,key ='2dmt')           
+                min_2=np.int32(np.min([df2_x, 50-df2_x,df2_y,50-df2_y]))
+                col2_apothem = st.slider('apothem', 0, min_2, min_2,key ='2dmt')           
                 pixels = (2+col2_apothem)**2
                 hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
                 (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
@@ -748,7 +756,7 @@ def Real_world():
                     mtx = df.iloc[i*50:(i+1)*50,0:50]
                     mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
                 
-                    if i == 0 | 1:
+                    if (i == 0) or (i == 1):
                         mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
                         mtx_pre.columns = range(y_start,y_end)
                         mtx_pre.index=range(x_start,x_end)
@@ -791,7 +799,9 @@ def Real_world():
                             framelinewidth=framelinewidth,
                             fontname=fontname
                         )
-                    
+                    mtx = mtx.reset_index(drop=True)
+                    mtx_pre = mtx_pre.reset_index(drop=True)
+                    mtx_delta=mtx-mtx_pre
                 
                     ### Derivative index
                     drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col1_apothem]) - np.array(x_drvtv[-col1_apothem:][::-1])])) 
@@ -809,7 +819,7 @@ def Real_world():
                         contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
     
                     ### calculate 
-                    inequ,CWSNR=calculate_index(mtx,col1_apothem*2,col1_apothem*2)
+                    inequ,CWSNR=calculate_index(mtx_delta,col1_apothem*2,col1_apothem*2)
                     col1_inequ_set.append(inequ)
                     col1_CWSNR_set.append(CWSNR) 
                 
@@ -828,7 +838,7 @@ def Real_world():
                     mtx = df.iloc[i*50:(i+1)*50,0:50]
                     mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
             
-                    if i == 0|1:
+                    if (i == 0) or (i == 1):
                         mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
                         mtx_pre.columns = range(y_start,y_end)
                         mtx_pre.index=range(x_start,x_end)
@@ -872,6 +882,9 @@ def Real_world():
                             fontname=fontname
                             
                         )
+                    mtx = mtx.reset_index(drop=True)
+                    mtx_pre = mtx_pre.reset_index(drop=True)
+                    mtx_delta=mtx-mtx_pre
                     
                     ### Derivative index
                     drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col2_apothem]) - np.array(x_drvtv[-col2_apothem:][::-1])])) 
@@ -888,7 +901,7 @@ def Real_world():
                         contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
      
                     ### calculate 
-                    inequ,CWSNR=calculate_index(mtx,col2_apothem*2,col2_apothem*2)
+                    inequ,CWSNR=calculate_index(mtx_delta,col2_apothem*2,col2_apothem*2)
                     col2_inequ_set.append(inequ)
                     col2_CWSNR_set.append(CWSNR) 
                     
@@ -953,7 +966,7 @@ def upload():
     drvt_index_y_sets = []
     col_inequ_set=[]
     col_CWSNR_set=[]    
-    cmlt_contour_color = ['red']   
+    
     (drvt_index_x_sets,  drvt_index_y_sets) = ([],[])
     (selected_option) = ("")
     
@@ -961,109 +974,160 @@ def upload():
     ''' Load the data and save the columns with categories as a dataframe. 
     This section also allows changes in the numerical and categorical columns. '''
     if st.button("Load Data") or st.session_state['data'].shape[0]>0:   
-        # Raw data 
-        st.dataframe(data)
-        st.session_state['data'] = data
+        if data.shape[0]>0:
+            # Raw data 
+            st.dataframe(data)
+            st.session_state['data'] = data
+            t_time = np.int32(data.shape[0]/data.shape[1])
+            cmlt_contour_color = generate_colors(t_time)
+             
+            
+            with st.form("form_"):
+                df = st.session_state['data']
+                fontnames = sorted(set([f.name for f in matplotlib.font_manager.fontManager.ttflist]))
+                ### parameters ###
+                # pdi for png figure
+                dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
+                # linewidth
+                linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
+                # frame line width
+                framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
+                # font family
+                fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
+                # tick_labelsize
+                tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    #            
+                # labelweight
+                labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #           
+        
+                ### parameters ###
+                hs_set = []
+                hs_btm_set = []
+                
+                # show node number set
+                for t_idx in range(0,t_time,1):
+                    hs_ = st.slider('hotspot nodes at timepoint '+str(t_idx), 0, 10, 1,key ='hs_'+str(t_idx))
+                    hs_set.append(hs_)
+                # show arrow density
+                densityYN = st.checkbox('Show arrow',value=False,key ='densityYN')
+                density = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density') 
+                
+                # countour line 
+                show_contour = st.checkbox('Show signal contour line',value=False,key ='show_contour')         
+                
+                # countour line of cumulative
+                show_cmlt_contour = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour')
+                cntrlinecml = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml')
+                       
+                # center coordinate
+                df_x = np.int32(df.shape[1]/2)
+                df_y = np.int32(df.shape[1]/2)
+                
+                col_center_x,col_center_y = st.slider('center x coordinate', 0, df.shape[1], np.int32(df_x),key ='1x'),st.slider('center y coordinate', 0, df.shape[1], np.int32(df_y),key ='1y')
 
-        with st.form("form_"):
-            df = st.session_state['data']
-            fontnames = sorted(set([f.name for f in matplotlib.font_manager.fontManager.ttflist]))
-            ### parameters ###
-            # pdi for png figure
-            dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
-            # linewidth
-            linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
-            # frame line width
-            framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
-            # font family
-            fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
-            # tick_labelsize
-            tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    # 
-            # labelweight
-            labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #           
-    
-            ### parameters ###
-            # show node number set
-            hs_ = st.slider('hotspot nodes', 0, 10, 1,key ='hs_')
-            # show arrow density
-            densityYN = st.checkbox('Show arrow',value=False,key ='densityYN')
-            density = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density') 
-            
-            # countour line 
-            show_contour = st.checkbox('Show signal contour line',value=False,key ='show_contour')         
-            
-            # countour line of cumulative
-            show_cmlt_contour = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour')
-            cntrlinecml = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml')
-                   
-            # center coordinate
-            df_x = np.int32(df.shape[0]/2)
-            df_y = np.int32(df.shape[1]/2)
-            
-            col_center_x,col_center_y = st.slider('center x coordinate', 0, df.shape[0], np.int32(df_x),key ='1x'),st.slider('center y coordinate', 0, df.shape[1], np.int32(df_y),key ='1y') 
-            # apothem 
-            col_apothem = st.slider('apothem', 0, np.int32(df.shape[0]/2), np.int32(df.shape[0]/4),key ='dmt')          
-            pixels = (2+col_apothem)**2
-            hs_btm = pixels-3 if pixels <= 200 else 200
-            (top1,btm1) = ([hs_],[hs_btm])      
-            submitted = st.form_submit_button("Generate!")
-            
-        if submitted:
-            contours_dfs = pd.DataFrame()
-            contours_cmltv_dfs = pd.DataFrame()
-            (x_start,x_end,y_start,y_end) = (col_center_x-col_apothem,col_center_x+col_apothem,col_center_y-col_apothem,col_center_y+col_apothem)  
-            
-            mtx = df.iloc[x_start:x_end,y_start:y_end] 
-            mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
-            mtx_pre.columns = range(y_start,y_end)
-            mtx_pre.index=range(x_start,x_end)
-            #(X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
-            (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                mtx=mtx,top=top1[0],btm=btm1[0],previous = mtx_pre,
-                x_unit = x_end-x_start,y_unit = y_end-y_start,
-                cmlt_contour_color=cmlt_contour_color[0],
-                densityYN=densityYN,density=density,
-                show_contour=show_cmlt_contour,show_cmlt_contour=show_cmlt_contour,
-                cntrlinecml=cntrlinecml,
-                timeline = '',
-                tick_labelsize = tick_labelsize,
-                dpi_value = dpi_value,
-                linewidth = linewidth,
-                labelweight=labelweight,
-                framelinewidth=framelinewidth,
-                fontname=fontname
-            )
-            ### Derivative index
-            drvt_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col_apothem]) - np.array(x_drvtv[-col_apothem:][::-1])])) 
-            drvt_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col_apothem]) - np.array(y_drvtv[-col_apothem:][::-1])])) 
+                min_=np.int32(np.min([df_x, df.shape[1]-df_x,df_y,df.shape[1]-df_y]))
+                # apothem 
+                col_apothem = st.slider('apothem', 0, min_, min_,key ='dmt')          
+                pixels = (2+col_apothem)**2
+                
+                for t_idx in range(0,t_time,1):
+                    hs_btm = pixels-3 if pixels <= 200 else 200
+                    hs_btm_set.append(hs_btm)
+                (top1,btm1) = ([hs_],[hs_btm])      
+                submitted = st.form_submit_button("Generate!")
+                
+            if submitted:
+                contours_dfs = pd.DataFrame()
+                contours_cmltv_dfs = pd.DataFrame()
+                (x_start,x_end,y_start,y_end) = (col_center_x-col_apothem,col_center_x+col_apothem,col_center_y-col_apothem,col_center_y+col_apothem)  
+                rangeVal = df.shape[1]
     
     
-            ### contour line export
-            if contours:
-                contours_df = get_contourline_df(contours)
-                contours_df['time'] = ''#timeline[i]
-                contours_dfs = pd.concat([contours_dfs,contours_df])
-            if contours_cmltv:
-                contours_cmltv_df = get_contourline_df(contours_cmltv)
-                contours_cmltv_df['time'] = ''#timeline[i]
-                contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
-            ### calculate 
-            inequ,CWSNR=calculate_index(mtx,col_apothem*2,col_apothem*2)
-            col_inequ_set.append(inequ)
-            col_CWSNR_set.append(CWSNR)   
-            st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
-            st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
-            try:
-                table_inequ=pd.DataFrame({'SII':col_inequ_set})
-                table_CWSNR=pd.DataFrame({'SCI':col_CWSNR_set})     
-                table_inequ.index=['1']
-                table_CWSNR.index=['1'] 
-                table_ = pd.merge(table_inequ,table_CWSNR,right_index=True,left_index= True)
-                st.write(table_)
-                st.markdown(get_table_download_link(table_, fileName = "SII_SCI_metrics"), unsafe_allow_html=True)
-                          
-            except:
-                st.write("")            
+                
+                for t in range(0,t_time,1):
+                    #st.write(t)
+                    mtx = df.iloc[t*rangeVal:(t+1)*rangeVal,0:rangeVal]
+                    mtx = mtx.iloc[x_start:x_end,y_start:y_end]       
+                    
+                    if (t == 0) or (t == 1): 
+                        #st.write('Yes')
+                        mtx_pre = pd.DataFrame(np.zeros(shape=(col_apothem*2, col_apothem*2)))
+                        mtx_pre.columns = list(range(y_start,y_end))
+                        mtx_pre.index=list(range(x_start,x_end))
+                        (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
+                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                            mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,
+                            x_unit = x_end-x_start,y_unit = y_end-y_start,
+                            cmlt_contour_color=cmlt_contour_color[t],
+                            densityYN=densityYN,density=density,
+                            show_contour=show_cmlt_contour,show_cmlt_contour=show_cmlt_contour,
+                            cntrlinecml=cntrlinecml,
+                            timeline = str(t),
+                            tick_labelsize = tick_labelsize,
+                            dpi_value = dpi_value,
+                            linewidth = linewidth,
+                            labelweight=labelweight,
+                            framelinewidth=framelinewidth,
+                            fontname=fontname
+                        )
+                    else:
+                        #st.write(t)
+                        ## 10 mins interval
+                        #mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50] 
+                        # 5 mins interval          
+                        mtx_pre = df.iloc[(t-1)*rangeVal:(t)*rangeVal,0:rangeVal]    
+                        mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]                  
+                        (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
+                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                            mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,
+                            x_unit = x_end-x_start,y_unit = y_end-y_start,
+                            cmlt_contour_color=cmlt_contour_color[t],
+                            densityYN=densityYN,density=density,
+                            show_contour=show_cmlt_contour,show_cmlt_contour=show_cmlt_contour, 
+                            cntrlinecml=cntrlinecml,
+                            timeline = str(t),
+                            tick_labelsize = tick_labelsize,
+                            dpi_value = dpi_value,
+                            linewidth = linewidth,
+                            labelweight=labelweight,
+                            framelinewidth=framelinewidth,
+                            fontname=fontname   
+                        )
+                    mtx = mtx.reset_index(drop=True)
+                    mtx_pre = mtx_pre.reset_index(drop=True)
+                    mtx_delta=mtx-mtx_pre
+                    ### Derivative index
+                    drvt_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col_apothem]) - np.array(x_drvtv[-col_apothem:][::-1])])) 
+                    drvt_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col_apothem]) - np.array(y_drvtv[-col_apothem:][::-1])])) 
+                       
+            
+                    ### contour line export
+                    if contours:
+                        contours_df = get_contourline_df(contours)
+                        contours_df['time'] = ''#timeline[i]
+                        contours_dfs = pd.concat([contours_dfs,contours_df])
+                    if contours_cmltv:
+                        contours_cmltv_df = get_contourline_df(contours_cmltv)
+                        contours_cmltv_df['time'] = ''#timeline[i]
+                        contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
+                    ### calculate 
+                    inequ,CWSNR=calculate_index(mtx_delta,col_apothem*2,col_apothem*2)
+                    col_inequ_set.append(inequ)
+                    col_CWSNR_set.append(CWSNR)   
+                    st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
+                    st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
+    #st.write(col_inequ_set)
+    #st.write(col_CWSNR_set)
+    try:
+        table_inequ=pd.DataFrame({'SII':col_inequ_set})
+        table_CWSNR=pd.DataFrame({'SCI':col_CWSNR_set})     
+        table_inequ.index=list(range(0,t_time,1))
+        table_CWSNR.index=list(range(0,t_time,1))
+        table_ = pd.merge(table_inequ,table_CWSNR,right_index=True,left_index= True)
+        st.write(table_)
+        st.markdown(get_table_download_link(table_, fileName = "SII_SCI_metrics"), unsafe_allow_html=True)
+                  
+    except:
+        st.write("")            
 ###################
 ### select menu ###
 ###################
