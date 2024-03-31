@@ -690,6 +690,8 @@ def Real_world():
                 else:
                     df1_x,df1_y = 25,25
                     
+                df1_x = 25 if df1_x>=50 else df1_x
+                df1_y = 25 if df1_y>=50 else df1_y                    
                 col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y') 
 
                 min_1=np.int32(np.min([df1_x, 50-df1_x,df1_y,50-df1_y]))
@@ -734,7 +736,8 @@ def Real_world():
                         df2_x,df2_y = df2.iloc[1,50],df2.iloc[1,51]       
                 else:
                     df2_x,df2_y = 25,25
-                    
+                df2_x = 25 if df2_x>=50 else df2_x
+                df2_y = 25 if df2_y>=50 else df2_y
                 col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
                 min_2=np.int32(np.min([df2_x, 50-df2_x,df2_y,50-df2_y]))
                 col2_apothem = st.slider('apothem', 0, min_2, min_2,key ='2dmt')           
