@@ -72,7 +72,21 @@ def get_table_download_link(df, **kwargs):
     in:  dataframe
     out: href string
     """
-    csv = df.to_csv(index=True, sep ='\t')
+    if 'headermark' in kwargs.keys():
+        if 'indexmark' in kwargs.keys():           
+            if (kwargs['headermark'] == False) and (kwargs['indexmark'] == False):
+                csv = df.to_csv(index=False, sep ='\t',header = None)
+            elif kwargs['indexmark'] == False:
+                csv = df.to_csv(index=False, sep ='\t',header = None)
+            elif kwargs['headermark'] == False:
+                csv = df.to_csv(index=True, sep ='\t',header = None)
+            else:
+                csv = df.to_csv(index=True, sep ='\t')
+        else:   
+            csv = df.to_csv(index=True, sep ='\t')     
+    else:
+        csv = df.to_csv(index=True, sep ='\t')
+    
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     prefix = "Download txt file for "
     if("fileName" in kwargs.keys()):
@@ -805,7 +819,7 @@ def Real_world():
                     mtx = mtx.reset_index(drop=True)
                     mtx_pre = mtx_pre.reset_index(drop=True)
                     mtx_delta=mtx-mtx_pre
-                
+                    mtx_delta = pd.DataFrame(np.where(mtx_delta<0,0,mtx_delta))
                     ### Derivative index
                     drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col1_apothem]) - np.array(x_drvtv[-col1_apothem:][::-1])])) 
                     drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col1_apothem]) - np.array(y_drvtv[-col1_apothem:][::-1])])) 
@@ -888,7 +902,7 @@ def Real_world():
                     mtx = mtx.reset_index(drop=True)
                     mtx_pre = mtx_pre.reset_index(drop=True)
                     mtx_delta=mtx-mtx_pre
-                    
+                    mtx_delta = pd.DataFrame(np.where(mtx_delta<0,0,mtx_delta))
                     ### Derivative index
                     drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col2_apothem]) - np.array(x_drvtv[-col2_apothem:][::-1])])) 
                     drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col2_apothem]) - np.array(y_drvtv[-col2_apothem:][::-1])])) 
@@ -947,8 +961,26 @@ def Real_world():
                     
         except:
             st.write("")
-            
+
+
+
+
+
+
+@st.cache_data(ttl=60,max_entries=1,persist="disk")
+def get_example(filename=''):
+    df = pd.read_csv(r'./'+filename, header=None,sep="\t")
+    return df
+
 def upload():
+    st.sidebar.markdown("The matrix can be of dimensions n∗n (n row, n column) or a m∗n (m=x∗n with x time points in a time series data). ")
+    st.sidebar.markdown("The example data can be downloaded via the link:")
+    example = get_example('upload.txt')
+    # Create a downloadable link
+    st.sidebar.markdown(get_table_download_link(example,fileName = "upload.txt",headermark=False,indexmark=False), unsafe_allow_html=True)
+    #file = 'yours'
+    #st.sidebar.markdown('You uploaded a matrix `%s`' % file)
+    
     st.markdown("## Data Upload")
     # Upload the dataset and save as csv
     st.markdown("### Upload a csv file for analysis.") 
@@ -1027,7 +1059,7 @@ def upload():
                 
                 col_center_x,col_center_y = st.slider('center x coordinate', 0, df.shape[1], np.int32(df_x),key ='1x'),st.slider('center y coordinate', 0, df.shape[1], np.int32(df_y),key ='1y')
 
-                min_=np.int32(np.min([df_x, df.shape[1]-df_x,df_y,df.shape[1]-df_y]))
+                min_=np.int32(np.min([col_center_x, df.shape[1]-col_center_x,col_center_y,df.shape[1]-col_center_y]))
                 # apothem 
                 col_apothem = st.slider('apothem', 0, min_, min_,key ='dmt')          
                 pixels = (2+col_apothem)**2
@@ -1098,6 +1130,7 @@ def upload():
                     mtx = mtx.reset_index(drop=True)
                     mtx_pre = mtx_pre.reset_index(drop=True)
                     mtx_delta=mtx-mtx_pre
+                    mtx_delta = pd.DataFrame(np.where(mtx_delta<0,0,mtx_delta))
                     ### Derivative index
                     drvt_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col_apothem]) - np.array(x_drvtv[-col_apothem:][::-1])])) 
                     drvt_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col_apothem]) - np.array(y_drvtv[-col_apothem:][::-1])])) 
