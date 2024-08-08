@@ -99,10 +99,10 @@ def get_table_download_link(df, **kwargs):
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 def REGISTER_TERRAIN_MAP(**kwargs):
-    full=np.power(10,4)*2
-    alpha = kwargs['alpha'] if 'alpha' in kwargs.keys() else 0
+    full=np.power(10,4)*2 # the whole scale of the number
+    alpha = kwargs['alpha'] if 'alpha' in kwargs.keys() else 0 # to grey the area that below the cutoff values
     t = int(full*alpha)
-    top = cm.get_cmap('Blues_r', full)
+    top = cm.get_cmap('Blues_r', full) 
     bottom = cm.get_cmap('Reds', full)
     fade = kwargs['fade'] if 'fade' in kwargs.keys() else [0,0,0,1]
     if alpha == 0:
@@ -120,7 +120,6 @@ def REGISTER_TERRAIN_MAP(**kwargs):
                        np.array([[0,0,0,0.5]]*(t-1)),
                    bottom(np.linspace(0, 1, full))[int(t):full]
                     ))
-        np.array([[1,2,3],]*3)
     newcmp = ListedColormap(newcolors, name='RedBlue')   
     return(newcmp)
 
@@ -459,7 +458,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     # Adjust the margins (decrease them)
     plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
     plt.show()
-    st.set_option('deprecation.showPyplotGlobalUse', False)
+    #st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot(fig)
     
     
@@ -577,7 +576,7 @@ def plot_time(IL6_21_IDI=[],IL6_15_IDI=[],xlabel = "",ylabel="",selected_option1
     ax.set_xticks([0,1,2,3,4,5])
     ax.set_xticklabels(['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins'])  
     plt.legend(loc="upper right",title='cell type')
-    st.set_option('deprecation.showPyplotGlobalUse', False)
+
     # Adjust the figure size
     fig.set_figwidth(5)  # Set the width in inches
     fig.set_figheight(5)  # Set the height in inches
@@ -977,7 +976,7 @@ def upload():
     st.sidebar.markdown("The example data can be downloaded via the link:")
     example = get_example('upload.txt')
     # Create a downloadable link
-    st.sidebar.markdown(get_table_download_link(example,fileName = "upload.txt",headermark=False,indexmark=False), unsafe_allow_html=True)
+    st.sidebar.markdown(get_table_download_link(example,fileName = "upload",headermark=False,indexmark=False), unsafe_allow_html=True)
     #file = 'yours'
     #st.sidebar.markdown('You uploaded a matrix `%s`' % file)
     
