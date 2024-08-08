@@ -46,7 +46,6 @@ import matplotlib.pyplot as plt
 #from streamlit_bokeh_events import streamlit_bokeh_events
 #from bokeh.transform import factor_cmap
 import plotly.express as px
-#st.set_page_config(layout='wide')
 from matplotlib import cm
 import base64
 from scipy import stats
@@ -129,26 +128,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pylab import *
 
-def plot_3D(mtx, **kwargs):
+def plot_3D(mtx, z_max=5000,**kwargs):
+    
     fig = plt.figure(figsize=(10, 10))
-    #ax = Axes3D(fig)
-    ax = fig.add_subplot(121, projection='3d')
+    ax = fig.add_subplot(211, projection='3d')
+    # load the last stage of the signals
     mtx_pre = kwargs['previous'] if 'previous' in kwargs.keys() else pd.DataFrame(np.zeros(shape=(50, 50)))
     
     lx,ly= size(mtx,0),size(mtx,1)       # Work out matrix dimensions
-    xpos = np.arange(0,lx,1)    # Set up a mesh of positions
-    ypos = np.arange(0,ly,1)
-    xpos, ypos = np.meshgrid(xpos+0.25, ypos+0.25)
-    
-    xpos = xpos.flatten()   # Convert positions to 1D array
-    ypos = ypos.flatten()
+    xpos, ypos = np.arange(0,lx,1),np.arange(0,ly,1)    # Set up a mesh of positions
+    xpos, ypos = np.meshgrid(xpos+0.25, ypos+0.25)  
+    xpos, ypos = xpos.flatten(),ypos.flatten()   # Convert positions to 1D array
     zpos = np.zeros(lx*ly)
-    
     dx = 0.5 * np.ones_like(zpos)
     dy = dx.copy()
     delta_dz = mtx.values.flatten() - mtx_pre.values.flatten()
-    # delta negative to zero
-    delta_dz[delta_dz<0] = 0
+    delta_dz[delta_dz<0] = 0 # replace the negative values by zero
     #print(delta_dz)
     dz_pre = mtx_pre.values.flatten()
     #cs = ['r', 'g', 'b', 'y', 'c'] * ly   
@@ -156,14 +151,14 @@ def plot_3D(mtx, **kwargs):
     #print(ypos.shape)
     #print(dz_pre.shape)
     _zpos = zpos   # the starting zpos for each bar
-    ax.bar3d(xpos, ypos,_zpos, dx, dy, dz_pre, color='b', shade=True)
+    
+    ax.bar3d(xpos, ypos,_zpos, dx, dy, dz_pre, color='grey', shade=True)
     _zpos += dz_pre
     ax.bar3d(xpos, ypos,_zpos, dx, dy, delta_dz, color='r', shade=True)
-    ax.set_zlim(0,5000)
+    ax.set_zlim(0,z_max)
     azim = 120
     elev = 70
     dist = 10
-
     if azim is not None:
         ax.azim = azim
     if dist is not None:
@@ -173,25 +168,30 @@ def plot_3D(mtx, **kwargs):
     ax.set_xlabel('x-axis')
     ax.set_ylabel('y-axis')
     ax.invert_xaxis()
-
+    #sh()
+    #ax.xaxis.set_ticklabels(mtx.columns) #w_xaxis.set_ticklabels
+    #ax.yaxis.set_ticklabels(mtx.index)
+    #ax.set_xlabel('Letter')
+    #ax.set_ylabel('Day')
+    #ax.set_zlabel('Occurrence')
+        
+    #plt.savefig('./myplot.png')
+    #plt.close()
     
     ################################
     ### 3D terrain delta changes ###
     ################################
-    ax2 = fig.add_subplot(122, projection='3d')
-    #X = np.linspace(0 , lx , lx )
-    #Y = np.linspace(0 , ly , ly )
+    ax2 = fig.add_subplot(212, projection='3d')
+    #X,Y = np.linspace(0 , lx , lx ),np.linspace(0 , ly , ly )
     X, Y = np.arange(0,lx,1),np.arange(0,ly,1)    # Set up a mesh of positions
-    X, Y = np.meshgrid(Y,X)   
-    
-    #print(lx)
-    #print(ly)
+    X, Y = np.meshgrid(Y,X)
     Z = np.array(mtx.reset_index(drop=True).subtract(mtx_pre.reset_index(drop=True)))
     Z[Z<0] = 0
     #print(Z.shape)
     #print(X.shape)
     #print(Y.shape)
     # Plot the surface.
+    #Z.reshape()
     surf = ax2.plot_surface(X,Y,Z, cmap=REGISTER_TERRAIN_MAP(),#vmax=Bound, vmin=-Bound,, antialiased=False
                            linewidth=0)  
     # Customize the z axis.
@@ -206,7 +206,7 @@ def plot_3D(mtx, **kwargs):
         ax2.elev = elev
     # Hide grid lines
     ax2.grid(False)
-    ax2.set_zlim(0,5000)
+    ax2.set_zlim(0,z_max)
     ax2.set_xlabel('x-axis')
     ax2.set_ylabel('y-axis')
     
@@ -214,7 +214,6 @@ def plot_3D(mtx, **kwargs):
     #ax.yaxis.set_ticklabels(mtx.index)
     ax2.invert_xaxis()
     plt.show()
-    st.pyplot(fig)
     return(X,Y,Z)
 
 def plot_inequality(mtx,**kwargs):
@@ -272,8 +271,6 @@ def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
     x_inequ=np.nan_to_num(x_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
     y_inequ=np.nan_to_num(y_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
     return(x_inequ,y_inequ)
-
-
 
 ### major function of plot stream ###
 # https://stackoverflow.com/questions/16529892/adding-water-flow-arrows-to-matplotlib-contour-plot
@@ -353,8 +350,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
                               )#color='0.6',
             # Customize the transparency level
             stream.lines.set_alpha(0.5)
-
-        
+   
     ### Contour gridded head observations ###
     contours =[]
     try:
@@ -377,13 +373,11 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
         except:
             print("not available")     
 
-    
     ####################
     ##### color ######
     #print(zi)
     #plt.imshow(zi,extent=[-lx, lx, -ly, ly], #cmap=REGISTER_TERRAIN_MAP(),#vmax=Bound, vmin=-Bound,, antialiased=False
     #                       interpolation='nearest',cmap='viridis')  # linewidth=1,
-    
     
     ### Plot well locations ###
     #if top != 0:
@@ -448,8 +442,6 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
         ax1.spines[axis].set_linewidth(framelinewidth)  # change width
         ax2.spines[axis].set_linewidth(framelinewidth)  # change width
         #ax.spines[axis].set_color('red')    # change color
-    
-
     
     # Save the plot as png and pdf files
     plt.savefig('./output/'+timeline+".png",dpi=dpi_value) # , bbox_inches='tight'
@@ -591,7 +583,7 @@ def generate_colors(n):
 ####################################################
 ### load the object and generate the coordincate ###
 ####################################################
-@st.cache_data(ttl=60,max_entries=1,persist="disk")
+@st.cache_data(max_entries=1,persist="disk") #ttl=60,
 def LOAD_DATA(inputDir='',dataDir='',sheet_name=''):
     df = pd.read_excel(r'./'+inputDir+dataDir, sheet_name=sheet_name,header=None)
     return df
@@ -966,7 +958,7 @@ def Real_world():
 
 
 
-@st.cache_data(ttl=60,max_entries=1,persist="disk")
+@st.cache_data(max_entries=1,persist="disk")
 def get_example(filename=''):
     df = pd.read_csv(r'./'+filename, header=None,sep="\t")
     return df
