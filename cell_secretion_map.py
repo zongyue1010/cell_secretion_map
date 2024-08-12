@@ -871,7 +871,7 @@ def Real_world():
                         #mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50] 
                         # 5 mins interval
                         mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50]    
-                        mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]
+                        mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
