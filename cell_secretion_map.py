@@ -1051,7 +1051,7 @@ def upload():
 
                 min_=np.int32(np.min([col_center_x, df.shape[1]-col_center_x,col_center_y,df.shape[1]-col_center_y]))
                 # apothem 
-                col_apothem = st.slider('apothem', 0, min_, min_,key ='dmt')          
+                col_apothem = st.slider('apothem', 0, min_-1, min_-1,key ='dmt')          
                 pixels = (2+col_apothem)**2
                 
                 for t_idx in range(0,t_time,1):
@@ -1075,7 +1075,8 @@ def upload():
                     
                     if (t == 0) or (t == 1): 
                         #st.write('Yes')
-                        mtx_pre = pd.DataFrame(np.zeros(shape=(col_apothem*2+1, col_apothem*2+1)))
+                        mtx_pre = pd.DataFrame(np.zeros(shape=(col_apothem*2, col_apothem*2)))
+                        mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]  
                         mtx_pre.columns = list(range((y_start-1),y_end))
                         mtx_pre.index=list(range((x_start-1),x_end))
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
