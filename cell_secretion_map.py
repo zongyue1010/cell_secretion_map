@@ -1075,7 +1075,7 @@ def upload():
                     
                     if (t == 0) or (t == 1): 
                         #st.write('Yes')
-                        mtx_pre = pd.DataFrame(np.zeros(shape=(col_apothem*2, col_apothem*2)))
+                        mtx_pre = pd.DataFrame(np.zeros(shape=(col_apothem*2+1, col_apothem*2+1)))
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]  
                         mtx_pre.columns = range((y_start-1),y_end)
                         mtx_pre.index = range((x_start-1),x_end)
