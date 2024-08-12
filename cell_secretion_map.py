@@ -1071,13 +1071,13 @@ def upload():
                 for t in range(0,t_time,1):
                     #st.write(t)
                     mtx = df.iloc[t*rangeVal:(t+1)*rangeVal,0:rangeVal]
-                    mtx = mtx.iloc[x_start:x_end,y_start:y_end]       
+                    mtx = mtx.iloc[(x_start-1):x_end,(y_start-1):y_end]       
                     
                     if (t == 0) or (t == 1): 
                         #st.write('Yes')
-                        mtx_pre = pd.DataFrame(np.zeros(shape=(col_apothem*2, col_apothem*2)))
-                        mtx_pre.columns = list(range(y_start,y_end))
-                        mtx_pre.index=list(range(x_start,x_end))
+                        mtx_pre = pd.DataFrame(np.zeros(shape=(col_apothem*2+1, col_apothem*2+1)))
+                        mtx_pre.columns = list(range((y_start-1),y_end))
+                        mtx_pre.index=list(range((x_start-1),x_end))
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,
@@ -1100,7 +1100,7 @@ def upload():
                         #mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50] 
                         # 5 mins interval          
                         mtx_pre = df.iloc[(t-1)*rangeVal:(t)*rangeVal,0:rangeVal]    
-                        mtx_pre = mtx_pre.iloc[x_start:x_end,y_start:y_end]                  
+                        mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]                  
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,
