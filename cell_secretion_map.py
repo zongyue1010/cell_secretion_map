@@ -266,8 +266,10 @@ def DERIVATIVE(arr, dx):
 def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
     ### lorenz curve ###
     x_val,y_val=mtx.sum(0),mtx.sum(1)
-    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit))
-    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit))    
+    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(1/x_unit,1,1/x_unit)+1/x_unit))#(np.arange(0,1,1/x_unit)+1/x_unit))
+    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(1/y_unit,1,1/y_unit)+1/y_unit)) #(np.arange(0,1,1/y_unit)+1/y_unit)) 
+    x_inequ=np.insert(x_inequ, 0, 0)
+    y_inequ=np.insert(y_inequ, 0, 0)    
     x_inequ=np.nan_to_num(x_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
     y_inequ=np.nan_to_num(y_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
     return(x_inequ,y_inequ)
@@ -401,29 +403,25 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     # Set the maximum number of ticks on the x-axis
     max_ticks = 3
     import matplotlib.ticker as ticker
-    #ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=linewidth)  
-    ax1.plot(np.arange(0,x_unit,1),(np.arange(0,x_unit,1)-np.arange(0,x_unit,1)),color='Black',linewidth=linewidth)  
-    ax1.plot(np.arange(0,x_unit,1),x_drvtv,linewidth=linewidth)
+    ax1.plot(np.arange(0,x_unit-1,1),(np.arange(0,x_unit-1,1)-np.arange(0,x_unit-1,1)),color='Black',linewidth=linewidth)      #ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=linewidth)  
+    ax1.plot(np.arange(0,x_unit-1,1),x_drvtv,linewidth=linewidth)
     ax1.xaxis.set_visible(False)
-    ax1.yaxis.set_label_position("right")
+    ax1.yaxis.set_label_position("right") #ax1.yaxis.tick_right()
     ax1.yaxis.set_tick_params(labelsize=tick_labelsize) 
-    # Set tick label font weight
-    ax1.set_yticklabels(ax1.get_yticks(), rotation=0, weight=labelweight)    
-    #ax1.yaxis.tick_right()
-    
     # Set the new tick locations on the x-axis
     ax1.yaxis.set_major_locator(ticker.MaxNLocator(max_ticks))
     #ax1.set_yticklabels([np.float(i) *100 for i in ax1.get_yticks()])
     #ax1.set_yticks(range(len([np.float(i)*100 for i in ax1.get_yticks()])))
+
     # Set tick label font weight
     # Optionally, you can format the tick labels if needed
     ax1.set_yticklabels(ax1.get_yticks(), rotation=0, weight=labelweight)    
     ax1.set_xticklabels(["{}".format(int(tick*100)) for tick in ax1.get_xticks()])
-    ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1.get_yticks()]) 
+    ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1.get_yticks()])   
     
-    
-    ax2.plot(np.arange(0,y_unit,1)-np.arange(0,y_unit,1),np.arange(0,y_unit,1),color='Black',linewidth=linewidth)
-    ax2.plot(y_drvtv,np.arange(0,y_unit,1),linewidth=linewidth)
+    ax2.plot(np.arange(0,y_unit-1,1)-np.arange(0,y_unit-1,1),np.arange(0,y_unit-1,1),color='Black',linewidth=linewidth)
+    ax2.plot(y_drvtv,np.arange(0,y_unit-1,1),linewidth=linewidth)
+    #ax2.plot(y_drvtv,np.arange(0.5,y_unit-0.5,1),linewidth=linewidth)
     ax2.invert_yaxis()
     ax2.xaxis.set_tick_params(labelsize=tick_labelsize)
     ax2.yaxis.set_visible(False)
@@ -431,6 +429,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ax2.xaxis.set_major_locator(ticker.MaxNLocator(max_ticks))
     #ax2.set_xticklabels([np.float(i)*100 for i in ax2.get_xticks()])
     #ax2.set_xticks(range(len([np.float(i)*100 for i in ax2.get_xticks()])))
+   
     # Set tick label font weight
     # Optionally, you can format the tick labels if needed
     ax2.set_xticklabels(ax2.get_xticks(), rotation=0, weight=labelweight)
@@ -771,7 +770,7 @@ def Real_world():
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
-                            x_unit = x_end-x_start,y_unit = y_end-y_start,
+                            x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN1,density=density1,
                             show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,
@@ -794,7 +793,7 @@ def Real_world():
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
-                            x_unit = x_end-x_start,y_unit = y_end-y_start,
+                            x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN1,density=density1,
                             show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,    
@@ -853,7 +852,7 @@ def Real_world():
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
-                            x_unit = x_end-x_start,y_unit = y_end-y_start,
+                            x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN2,density=density2,
                             show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2,    
@@ -876,7 +875,7 @@ def Real_world():
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
-                            x_unit = x_end-x_start,y_unit = y_end-y_start,
+                            x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN2,density=density2,
                             show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2, 
