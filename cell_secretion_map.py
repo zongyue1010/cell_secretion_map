@@ -826,7 +826,7 @@ def Real_world():
                         contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
     
                     ### calculate 
-                    inequ,CWSNR=calculate_index(mtx_delta,col1_apothem*2,col1_apothem*2)
+                    inequ,CWSNR=calculate_index(mtx_delta,col1_apothem*2+1,col1_apothem*2+1)
                     col1_inequ_set.append(inequ)
                     col1_CWSNR_set.append(CWSNR) 
                 
@@ -908,7 +908,7 @@ def Real_world():
                         contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
      
                     ### calculate 
-                    inequ,CWSNR=calculate_index(mtx_delta,col2_apothem*2,col2_apothem*2)
+                    inequ,CWSNR=calculate_index(mtx_delta,col1_apothem*2+1,col1_apothem*2+1)
                     col2_inequ_set.append(inequ)
                     col2_CWSNR_set.append(CWSNR) 
                     
