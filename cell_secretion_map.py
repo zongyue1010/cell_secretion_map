@@ -1061,8 +1061,8 @@ def upload():
                     #st.write(t)
                     mtx = df.iloc[t*rangeVal:(t+1)*rangeVal,0:rangeVal]
                     mtx = mtx.iloc[(x_start-1):x_end,(y_start-1):y_end]       
-                    print((x_end-x_start))
-                    print((y_end-y_start))
+                    print((x_end-x_start+1))
+                    print((y_end-y_start+1))
                     if (t == 0) or (t == 1): 
                         #st.write('Yes')
                         mtx_pre = pd.DataFrame(np.zeros(shape=(col_apothem*2+1, col_apothem*2+1)))
@@ -1072,7 +1072,7 @@ def upload():
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,
-                            x_unit = (x_end-x_start), y_unit = (y_end-y_start),
+                            x_unit = (x_end-x_start+1), y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[t],
                             densityYN=densityYN,density=density,
                             show_contour=show_cmlt_contour,show_cmlt_contour=show_cmlt_contour,
@@ -1095,7 +1095,7 @@ def upload():
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,
-                            x_unit = (x_end-x_start), y_unit = (y_end-y_start),
+                            x_unit = (x_end-x_start+1), y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[t],
                             densityYN=densityYN,density=density,
                             show_contour=show_cmlt_contour,show_cmlt_contour=show_cmlt_contour, 
