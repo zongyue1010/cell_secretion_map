@@ -266,8 +266,8 @@ def DERIVATIVE(arr, dx):
 def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
     ### lorenz curve ###
     x_val,y_val=mtx.sum(0),mtx.sum(1)
-    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(1/x_unit,1,1/x_unit)+1/x_unit))#(np.arange(0,1,1/x_unit)+1/x_unit))
-    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(1/y_unit,1,1/y_unit)+1/y_unit)) #(np.arange(0,1,1/y_unit)+1/y_unit)) 
+    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit))
+    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit)) 
     x_inequ=np.insert(x_inequ, 0, 0)
     y_inequ=np.insert(y_inequ, 0, 0)    
     x_inequ=np.nan_to_num(x_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
@@ -506,8 +506,8 @@ def DERIVATIVE(arr, dx):
 def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
     ### lorenz curve ###
     x_val,y_val=mtx.sum(0),mtx.sum(1)
-    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(1/x_unit,1,1/x_unit)+1/x_unit))
-    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(1/y_unit,1,1/y_unit)+1/y_unit))    
+    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit))
+    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit)) 
     x_inequ=np.insert(x_inequ, 0, 0)
     y_inequ=np.insert(y_inequ, 0, 0)
     x_inequ=np.nan_to_num(x_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
@@ -761,16 +761,16 @@ def Real_world():
                 (x_start,x_end,y_start,y_end) = (col1_center_x-col1_apothem,col1_center_x+col1_apothem,col1_center_y-col1_apothem,col1_center_y+col1_apothem)
                 for i in range(1,7,1):
                     mtx = df.iloc[i*50:(i+1)*50,0:50]
-                    mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
+                    mtx = mtx.iloc[(x_start-1):x_end,(y_start-1):y_end] 
                 
                     if (i == 0) or (i == 1):
-                        mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
-                        mtx_pre.columns = range(y_start,y_end)
-                        mtx_pre.index=range(x_start,x_end)
+                        mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start+1, y_end-y_start+1)))
+                        mtx_pre.columns = range(y_start-1,y_end)
+                        mtx_pre.index=range(x_start-1,x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
-                            x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
+                            x_unit = (x_end-x_start+1),y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN1,density=density1,
                             show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,
@@ -793,7 +793,7 @@ def Real_world():
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
-                            x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
+                            x_unit = (x_end-x_start+1),y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN1,density=density1,
                             show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,    
@@ -843,12 +843,12 @@ def Real_world():
                 (x_start,x_end,y_start,y_end) = (col2_center_x-col2_apothem,col2_center_x+col2_apothem,col2_center_y-col2_apothem,col2_center_y+col2_apothem)
                 for i in range(1,7,1):
                     mtx = df.iloc[i*50:(i+1)*50,0:50]
-                    mtx = mtx.iloc[x_start:x_end,y_start:y_end] 
+                    mtx = mtx.iloc[(x_start-1):x_end,(y_start-1):y_end] 
             
                     if (i == 0) or (i == 1):
-                        mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
-                        mtx_pre.columns = range(y_start,y_end)
-                        mtx_pre.index=range(x_start,x_end)
+                        mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start+1, y_end-y_start+1)))
+                        mtx_pre.columns = range(y_start-1,y_end)
+                        mtx_pre.index=range(x_start-1,x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
