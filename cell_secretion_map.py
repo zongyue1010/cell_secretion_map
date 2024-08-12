@@ -502,17 +502,6 @@ def DERIVATIVE(arr, dx):
     derivative = np.array(diff / dx).round(3)
     return derivative
 
-### plot inequality ###
-def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
-    ### lorenz curve ###
-    x_val,y_val=mtx.sum(0),mtx.sum(1)
-    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit))
-    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit)) 
-    x_inequ=np.insert(x_inequ, 0, 0)
-    y_inequ=np.insert(y_inequ, 0, 0)
-    x_inequ=np.nan_to_num(x_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
-    y_inequ=np.nan_to_num(y_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
-    return(x_inequ,y_inequ)
 
 ### generate center weights ###
 def generate_weights(x_drvtv):
