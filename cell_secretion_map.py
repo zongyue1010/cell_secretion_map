@@ -403,8 +403,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     # Set the maximum number of ticks on the x-axis
     max_ticks = 3
     import matplotlib.ticker as ticker
-    ax1.plot(np.arange(0,x_unit-1,1),(np.arange(0,x_unit-1,1)-np.arange(0,x_unit-1,1)),color='Black',linewidth=linewidth)      #ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=linewidth)  
-    ax1.plot(np.arange(0,x_unit-1,1),x_drvtv,linewidth=linewidth)
+    ax1.plot(np.arange(0,x_unit,1),(np.arange(0,x_unit,1)-np.arange(0,x_unit,1)),color='Black',linewidth=linewidth)      #ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=linewidth)  
+    ax1.plot(np.arange(0,x_unit,1),x_drvtv,linewidth=linewidth)
     ax1.xaxis.set_visible(False)
     ax1.yaxis.set_label_position("right") #ax1.yaxis.tick_right()
     ax1.yaxis.set_tick_params(labelsize=tick_labelsize) 
@@ -419,8 +419,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
     ax1.set_xticklabels(["{}".format(int(tick*100)) for tick in ax1.get_xticks()])
     ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1.get_yticks()])   
     
-    ax2.plot(np.arange(0,y_unit-1,1)-np.arange(0,y_unit-1,1),np.arange(0,y_unit-1,1),color='Black',linewidth=linewidth)
-    ax2.plot(y_drvtv,np.arange(0,y_unit-1,1),linewidth=linewidth)
+    ax2.plot(np.arange(0,y_unit,1)-np.arange(0,y_unit,1),np.arange(0,y_unit,1),color='Black',linewidth=linewidth)
+    ax2.plot(y_drvtv,np.arange(0,y_unit,1),linewidth=linewidth)
     #ax2.plot(y_drvtv,np.arange(0.5,y_unit-0.5,1),linewidth=linewidth)
     ax2.invert_yaxis()
     ax2.xaxis.set_tick_params(labelsize=tick_labelsize)
