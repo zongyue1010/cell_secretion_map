@@ -266,8 +266,8 @@ def DERIVATIVE(arr, dx):
 def GINI_IDX(mtx=[],x_unit=[],y_unit=[]):
     ### lorenz curve ###
     x_val,y_val=mtx.sum(0),mtx.sum(1)
-    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit))
-    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit)) 
+    x_inequ = np.array((x_val/x_val.sum()).cumsum()-(np.arange(0,1,1/x_unit)+1/x_unit)[0:x_unit])
+    y_inequ = np.array((y_val/y_val.sum()).cumsum()-(np.arange(0,1,1/y_unit)+1/y_unit)[0:y_unit])
     x_inequ=np.insert(x_inequ, 0, 0)
     y_inequ=np.insert(y_inequ, 0, 0)    
     x_inequ=np.nan_to_num(x_inequ, copy=True, nan=0.0, posinf=None, neginf=None)
@@ -288,7 +288,7 @@ def save_as_pdf(buffer,pdf_filename):
     c.save()
     st.success(f'Successfully saved as {pdf_filename}')
 
-def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
+def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),**kwargs):
     # -- parameters --------------------
     lx,ly= np.size(mtx,0),np.size(mtx,1) # Work out matrix dimensions  
     cmlt_contour_color = kwargs['cmlt_contour_color'] if 'cmlt_contour_color' in kwargs.keys() else 'red'
@@ -355,14 +355,14 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,**kwargs):
    
     ### Contour gridded head observations ###
     contours =[]
-    try:
+    try: # plot contour line of the delta
         ax.contourf(xi, yi, zi, 
-                          linewidths=2,levels=list(np.linspace(500,5000,7)),cmap=newcmp,#list(np.linspace(500,5000,7))
+                          linewidths=2,levels=list(colorLevels),cmap=newcmp,#list(np.linspace(500,5000,7))
                             #cmap="jet2",
                           linestyles='dashed')  
         if show_cmlt_contour == True:
             contours = ax.contour(xi, yi, zi, 
-                              linewidths=2,levels=list(np.linspace(500,5000,7)),cmap=newcmp,#list(np.linspace(500,5000,7))
+                              linewidths=2,levels=list(colorLevels),cmap=newcmp,#list(np.linspace(500,5000,7))
                               linestyles='dashed')
             ax.clabel(contours)
     except:
@@ -1012,7 +1012,9 @@ def upload():
                 tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    #            
                 # labelweight
                 labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #           
-        
+                # colorLevels
+                colorLevels = st.slider('Select a range of values',min_value=0,max_value=5000,value=(0, 5000),key ='colorLevels')
+                
                 ### parameters ###
                 hs_set = []
                 hs_btm_set = []
@@ -1061,8 +1063,6 @@ def upload():
                     #st.write(t)
                     mtx = df.iloc[t*rangeVal:(t+1)*rangeVal,0:rangeVal]
                     mtx = mtx.iloc[(x_start-1):x_end,(y_start-1):y_end]       
-                    print((x_end-x_start+1))
-                    print((y_end-y_start+1))
                     if (t == 0) or (t == 1): 
                         #st.write('Yes')
                         mtx_pre = pd.DataFrame(np.zeros(shape=(col_apothem*2+1, col_apothem*2+1)))
@@ -1071,7 +1071,7 @@ def upload():
                         mtx_pre.index = range((x_start-1),x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,
+                            mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,colorLevels=np.linspace(colorLevels[0],colorLevels[1],7),
                             x_unit = (x_end-x_start+1), y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[t],
                             densityYN=densityYN,density=density,
@@ -1094,7 +1094,7 @@ def upload():
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]                  
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,
+                            mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,colorLevels=np.linspace(colorLevels[0],colorLevels[1],7),
                             x_unit = (x_end-x_start+1), y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[t],
                             densityYN=densityYN,density=density,
@@ -1127,7 +1127,7 @@ def upload():
                         contours_cmltv_df['time'] = ''#timeline[i]
                         contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
                     ### calculate 
-                    inequ,CWSNR=calculate_index(mtx_delta,col_apothem*2,col_apothem*2)
+                    inequ,CWSNR=calculate_index(mtx_delta,col_apothem*2+1,col_apothem*2+1)
                     col_inequ_set.append(inequ)
                     col_CWSNR_set.append(CWSNR)   
                     st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
