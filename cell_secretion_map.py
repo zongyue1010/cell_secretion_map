@@ -288,7 +288,7 @@ def save_as_pdf(buffer,pdf_filename):
     c.save()
     st.success(f'Successfully saved as {pdf_filename}')
 
-def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),signalCutoff=0,**kwargs):
+def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),signalCutoff=0,RBF_function='linear',**kwargs):
     # -- parameters --------------------
     lx,ly= np.size(mtx,0),np.size(mtx,1) # Work out matrix dimensions  
     cmlt_contour_color = kwargs['cmlt_contour_color'] if 'cmlt_contour_color' in kwargs.keys() else 'red'
@@ -336,8 +336,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     (mask,mask_top,mask_btm) = GET_MASK(z=z,top=top,btm=btm)
     (mask_cmltv,mask_top_cmltv,mask_btm_cmltv) = GET_MASK(z=z_cmltv,top=top,btm=btm)
 
-    func = Rbf(xpos[mask],ypos[mask], z[mask], function='linear')
-    func_cmltv = Rbf(xpos[mask_cmltv],ypos[mask_cmltv], z_cmltv[mask_cmltv], function='linear')
+    func = Rbf(xpos[mask],ypos[mask], z[mask], function=RBF_function)
+    func_cmltv = Rbf(xpos[mask_cmltv],ypos[mask_cmltv], z_cmltv[mask_cmltv], function=RBF_function)
     zi_cmltv,zi = func_cmltv(xi, yi),func(xi, yi) 
     
     # get the positions of the masked cumulative expression
@@ -652,7 +652,9 @@ def Real_world():
         # signal noise cutoff
         signalCutoff = st.slider('Enter signal noise cutoff',1, 5000-1, 0,key ='signalCutoff')    #        
         # colorLevels
-        colorLevelsSet = st.slider('Select a range of values for coloring',min_value=signalCutoff,max_value=5000,value=(signalCutoff, 5000),key ='colorLevelsSet')        
+        colorLevelsSet = st.slider('Select a range of values for coloring',min_value=signalCutoff,max_value=5000,value=(signalCutoff, 5000),key ='colorLevelsSet')
+
+
         with st.form("form"):    
             with col1: 
                 drvt1_index_x_sets = []
@@ -669,6 +671,7 @@ def Real_world():
                 df1 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option1)
 
                 ### parameters ###
+                RBF_function1 = 'linear'
                 hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = 1,1,2,2,2,3
                 densityYN1,density1,show_contour1,show_cmlt_contour1,cntrlinecml1=False,1.0,False,False,1200.0
                 # center coordinate
@@ -693,15 +696,18 @@ def Real_world():
                     st.session_state.show_data1_para = False
                 # Toggle the visibility when the button is clicked
                 if st.button('Show/Hide advanced parameters',key='data1_toggle'):
-                    st.session_state.show_data1_para = not st.session_state.show_data1_para
+                    st.session_state.show_data1_para = not st.session_state.show_data1_para  
                 # Display content based on the session state
                 if st.session_state.show_data1_para:
                     ### parameters ###
+                    # interpolate function
+                    RBF_function1 = st.selectbox('Select an option for interpolation function', ['linear','gaussian','cubic','quintic','multiquadric','thin_plate','inverse'],key='RBF_function1')                     
                     # show node number set
-                    hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')
+                    st.write("Enter the number of signals for interpolation:")
+                    hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 100, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 100, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 100, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 100, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 100, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 100, 3,key ='hs1_30')
                     # show arrow density
-                    densityYN1 = st.checkbox('Show arrow',value=False,key ='densityYN1')
-                    density1 = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density1') 
+                    densityYN1 = st.checkbox('Show arrow in the stream plot',value=False,key ='densityYN1')
+                    density1 = st.slider('Enter arrow density', 0.0, 10.0, 1.0,key ='density1') 
         
                     # countour line 
                     show_contour1 = st.checkbox('Show signal contour line',value=False,key ='show_contour1')         
@@ -712,7 +718,7 @@ def Real_world():
                     col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y') 
                     min_1=np.int32(np.min([df1_x, 50-df1_x,df1_y,50-df1_y]))
                     # apothem
-                    col1_apothem = st.slider('apothem', 0, min_1-1, min_1-1,key ='1dmt')          
+                    col1_apothem = st.slider('Enter a number for apothem', 0, min_1-1, min_1-1,key ='1dmt')          
                     pixels = (2+col1_apothem)**2
                     hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
                     (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
@@ -731,6 +737,7 @@ def Real_world():
                 df2 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option2)
 
                 ### parameters ###
+                RBF_function2 = 'linear'
                 hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = 1,1,2,2,2,3
                 densityYN2,density2,show_contour2,show_cmlt_contour2,cntrlinecml2=False,1.0,False,False,1200.0
                 # center coordinate
@@ -759,11 +766,14 @@ def Real_world():
                 # Display content based on the session state
                 if st.session_state.show_data2_para:                
                     ### parameters ###
+                    # interpolate function
+                    RBF_function2 = st.selectbox('Select an option for interpolation function', ['linear','gaussian','cubic','quintic','multiquadric','thin_plate','inverse'],key='RBF_function2')                      
                     # show node number set
-                    hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs2_30')
+                    st.write("Enter the number of signals for interpolation:")
+                    hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 100, 1,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 100, 1,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 100, 2,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 100, 2,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 100, 2,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 100, 3,key ='hs2_30')
                     # show arrow density
-                    densityYN2 = st.checkbox('Show arrow',value=False,key ='densityYN2')
-                    density2 = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density2')
+                    densityYN2 = st.checkbox('Show arrow in the stream plot',value=False,key ='densityYN2')
+                    density2 = st.slider('Enter arrow density', 0.0, 10.0, 1.0,key ='density2')
                     # countour line 
                     show_contour2 = st.checkbox('Show signal contour line',value=False,key ='show_contour2')            
                     # countour line of culmulative
@@ -771,7 +781,7 @@ def Real_world():
                     cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml2')                 
                     col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
                     min_2=np.int32(np.min([df2_x, 50-df2_x,df2_y,50-df2_y]))
-                    col2_apothem = st.slider('apothem', 0, min_2-1, min_2-1,key ='2dmt')           
+                    col2_apothem = st.slider('Enter a number for apothem', 0, min_2-1, min_2-1,key ='2dmt')           
                     pixels = (2+col2_apothem)**2
                     hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
                     (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
@@ -1062,24 +1072,26 @@ def upload():
                     # font family
                     fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
                     # tick_labelsize
-                    tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    #            
+                    tick_labelsize = st.slider('Enter tick label size',1, 80, 20,key ='tick_labelsize')    #            
                     # labelweight
                     labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #        
                     # signal noise cutoff
                     signalCutoff_ = st.slider('Enter signal noise cutoff',1, 4999, 0,key ='signalCutoff_')    #                            
                     # colorLevels
                     colorLevels_ = st.slider('Select a range of values for coloring',min_value=signalCutoff_,max_value=5000,value=(signalCutoff_,5000),key ='colorLevels_')
-                    
+
                     ### parameters ###
                     # center coordinate
+                    RBF_function_ = 'linear'
                     df_x = np.int32(df.shape[1]/2)
                     df_y = np.int32(df.shape[1]/2)     
-                    hs_set,hs_btm_set = list(np.repeat(1,t_time)),list(np.repeat(1,t_time))
+                    hs_set = list(np.repeat(1,t_time))
                     densityYN,density,show_contour,show_cmlt_contour,cntrlinecml=False,1,False,False,1200.0
                     col_center_x,col_center_y=np.int32(df_x),np.int32(df_y)
                     min_=np.int32(np.min([col_center_x, df.shape[1]-col_center_x,col_center_y,df.shape[1]-col_center_y]))
                     col_apothem = min_-1
-                    pixels = (2+col_apothem)**2
+                    pixels = (col_apothem)**2
+                    hs_btm_set=[]
                     for t_idx in range(0,t_time,1):
                         hs_btm = pixels-3 if pixels <= 200 else 200
                         hs_btm_set.append(hs_btm)
@@ -1092,16 +1104,19 @@ def upload():
                         st.session_state.show_data_para = not st.session_state.show_data_para
                     # Display content based on the session state
                     if st.session_state.show_data_para:  
+                        
                         ### parameters ###
-                        hs_set = []
-                        hs_btm_set = []                        
+                        # interpolate function
+                        RBF_function_ = st.selectbox('Select an option for interpolation function', ['linear','gaussian','cubic','quintic','multiquadric','thin_plate','inverse'],key='RBF_function_')   
+                        hs_set = []                                      
                         # show node number set
+                        st.write("Enter the number of signals for interpolation:")
                         for t_idx in range(0,t_time,1):
-                            hs_ = st.slider('hotspot nodes at timepoint '+str(t_idx), 0, 10, 1,key ='hs_'+str(t_idx))
+                            hs_ = st.slider('hotspot nodes at timepoint '+str(t_idx), 0, 100, 1,key ='hs_'+str(t_idx))
                             hs_set.append(hs_)
                         # show arrow density
-                        densityYN = st.checkbox('Show arrow',value=False,key ='densityYN')
-                        density = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density') 
+                        densityYN = st.checkbox('Show arrow in the stream plot',value=False,key ='densityYN')
+                        density = st.slider('Enter arrow density', 0.0, 10.0, 1.0,key ='density') 
                         
                         # countour line 
                         show_contour = st.checkbox('Show signal contour line',value=False,key ='show_contour')         
@@ -1112,8 +1127,9 @@ def upload():
                         col_center_x,col_center_y = st.slider('center x coordinate', 0, df.shape[1], np.int32(df_x),key ='1x'),st.slider('center y coordinate', 0, df.shape[1], np.int32(df_y),key ='1y')
                         min_=np.int32(np.min([col_center_x, df.shape[1]-col_center_x,col_center_y,df.shape[1]-col_center_y]))
                         # apothem 
-                        col_apothem = st.slider('apothem', 0, min_-1, min_-1,key ='dmt')          
-                        pixels = (2+col_apothem)**2                       
+                        col_apothem = st.slider('Enter a number for apothem', 0, min_-1, min_-1,key ='dmt')          
+                        pixels = (col_apothem)**2       
+                        hs_btm_set = []
                         for t_idx in range(0,t_time,1):
                             hs_btm = pixels-3 if pixels <= 200 else 200
                             hs_btm_set.append(hs_btm)
@@ -1165,7 +1181,7 @@ def upload():
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]                  
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=top[t],btm=btm[t],previous = mtx_pre,signalCutoff=signalCutoff_,
+                            mtx=mtx,top=top[t],btm=btm[t],previous = mtx_pre,signalCutoff=signalCutoff_,RBF_function=RBF_function_,
                             colorLevels=np.linspace(colorLevels_[0],colorLevels_[1],7),
                             x_unit = (x_end-x_start+1), y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[t],
