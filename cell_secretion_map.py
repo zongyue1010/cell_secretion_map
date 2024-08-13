@@ -288,7 +288,7 @@ def save_as_pdf(buffer,pdf_filename):
     c.save()
     st.success(f'Successfully saved as {pdf_filename}')
 
-def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),**kwargs):
+def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),signalCutoff=0,**kwargs):
     # -- parameters --------------------
     lx,ly= np.size(mtx,0),np.size(mtx,1) # Work out matrix dimensions  
     cmlt_contour_color = kwargs['cmlt_contour_color'] if 'cmlt_contour_color' in kwargs.keys() else 'red'
@@ -316,12 +316,15 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),**
     ax = plt.subplot2grid((4, 4), (0, 0), colspan=3, rowspan=3)
     ax1 = plt.subplot2grid((4, 4), (3, 0), colspan=3, rowspan=1)
     ax2 = plt.subplot2grid((4, 4), (0, 3),colspan=1, rowspan=3)  
+
+    # signal cutoff
+    mtx[mtx<signalCutoff]=0
+    mtx_pre[mtx_pre<signalCutoff]=0
     
     ### delta changes ###
     Z = np.array(mtx.reset_index(drop=True).subtract(mtx_pre.reset_index(drop=True)))[:,::-1]     
     Z_cmltv = np.array(mtx.reset_index(drop=True))[:,::-1]
-    Z[Z<0] = 0
-    Z_cmltv[Z_cmltv<0] = 0
+    Z_cmltv[Z_cmltv<signalCutoff] = 0
     
     ### Interpolate these onto a regular grid ###
     xi,yi = np.meshgrid(np.arange(0,lx,1),np.arange(0,ly,1)) # Set up a mesh of positions
@@ -399,7 +402,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),**
     y_drvtv = list(DERIVATIVE(y_inequ,1))
 
 
-    ### plot IDI (index of derivative inequality) ###
+    ### plot SII (signal inequality index) ###
     # Set the maximum number of ticks on the x-axis
     max_ticks = 3
     import matplotlib.ticker as ticker
@@ -415,6 +418,10 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),**
 
     # Set tick label font weight
     # Optionally, you can format the tick labels if needed
+    # Get current ticks
+    ticks = ax1.get_xticks()
+    # Set the tick positions using FixedLocator
+    ax1.xaxis.set_major_locator(ticker.FixedLocator(ticks))
     ax1.set_yticklabels(ax1.get_yticks(), rotation=0, weight=labelweight)    
     ax1.set_xticklabels(["{}".format(int(tick*100)) for tick in ax1.get_xticks()])
     ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1.get_yticks()])   
@@ -451,8 +458,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),**
     plt.show()
     #st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot(fig)
-    
-    
+       
     ### save figure buffer ###
     buffer = io.BytesIO()
     plt.savefig(buffer, format='pdf')
@@ -643,7 +649,10 @@ def Real_world():
         tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    # 
         # labelweight
         labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #     
-        
+        # signal noise cutoff
+        signalCutoff = st.slider('Enter signal noise cutoff',1, 5000-1, 0,key ='signalCutoff')    #        
+        # colorLevels
+        colorLevelsSet = st.slider('Select a range of values for coloring',min_value=signalCutoff,max_value=5000,value=(signalCutoff, 5000),key ='colorLevelsSet')        
         with st.form("form"):    
             with col1: 
                 drvt1_index_x_sets = []
@@ -658,42 +667,57 @@ def Real_world():
                 sheet_names1 = sheet_names 
                 selected_option1 = st.selectbox('Select an option', sheet_names1,key='sheet_names1')             
                 df1 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option1)
-                
+
                 ### parameters ###
-                # show node number set
-                hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')
-                # show arrow density
-                densityYN1 = st.checkbox('Show arrow',value=False,key ='densityYN1')
-                density1 = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density1') 
-    
-                # countour line 
-                show_contour1 = st.checkbox('Show signal contour line',value=False,key ='show_contour1')         
-                
-                # countour line of cumulative
-                show_cmlt_contour1 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour1')
-                cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml1')
-                       
+                hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = 1,1,2,2,2,3
+                densityYN1,density1,show_contour1,show_cmlt_contour1,cntrlinecml1=False,1.0,False,False,1200.0
                 # center coordinate
                 if df1.shape[1]>50:
                     df1_x,df1_y = df1.iloc[0,50],df1.iloc[0,51]
                     ## Correct usage by converting the integer to a string
-                    number_str = str(df1_x)
+                    number_str = str(df1_x)                
                     if ~number_str.isdigit():
                         df1_x,df1_y = df1.iloc[1,50],df1.iloc[1,51]       
                 else:
                     df1_x,df1_y = 25,25
-                    
                 df1_x = 25 if df1_x>=50 else df1_x
-                df1_y = 25 if df1_y>=50 else df1_y                    
-                col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y') 
-
+                df1_y = 25 if df1_y>=50 else df1_y      
+                col1_center_x,col1_center_y =int(df1_x),int(df1_y)
                 min_1=np.int32(np.min([df1_x, 50-df1_x,df1_y,50-df1_y]))
-                # apothem
-                col1_apothem = st.slider('apothem', 0, min_1, min_1,key ='1dmt')          
+                col1_apothem = min_1-1
                 pixels = (2+col1_apothem)**2
                 hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
-                (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
-                
+                (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])      
+                # Toggle Initialize the session state for content visibility
+                if 'show_data1_para' not in st.session_state:
+                    st.session_state.show_data1_para = False
+                # Toggle the visibility when the button is clicked
+                if st.button('Show/Hide advanced parameters',key='data1_toggle'):
+                    st.session_state.show_data1_para = not st.session_state.show_data1_para
+                # Display content based on the session state
+                if st.session_state.show_data1_para:
+                    ### parameters ###
+                    # show node number set
+                    hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs1_30')
+                    # show arrow density
+                    densityYN1 = st.checkbox('Show arrow',value=False,key ='densityYN1')
+                    density1 = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density1') 
+        
+                    # countour line 
+                    show_contour1 = st.checkbox('Show signal contour line',value=False,key ='show_contour1')         
+                    
+                    # countour line of cumulative
+                    show_cmlt_contour1 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour1')
+                    cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml1')                  
+                    col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y') 
+                    min_1=np.int32(np.min([df1_x, 50-df1_x,df1_y,50-df1_y]))
+                    # apothem
+                    col1_apothem = st.slider('apothem', 0, min_1-1, min_1-1,key ='1dmt')          
+                    pixels = (2+col1_apothem)**2
+                    hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
+                    (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
+                else:
+                    st.write("Click the button to show it.")
      
             with col2:
                 drvt2_index_x_sets = []
@@ -705,21 +729,10 @@ def Real_world():
                 sheet_names2 = sheet_names
                 selected_option2 = st.selectbox('Select an option', sheet_names2,key='sheet_names2')
                 df2 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option2)
-                
+
                 ### parameters ###
-                # show node number set
-                hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs2_30')
-                # show arrow density
-                densityYN2 = st.checkbox('Show arrow',value=False,key ='densityYN2')
-                density2 = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density2')
-                
-                # countour line 
-                show_contour2 = st.checkbox('Show signal contour line',value=False,key ='show_contour2')            
-                # countour line of culmulative
-                show_cmlt_contour2 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour2')
-    
-                cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml2')
-                
+                hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = 1,1,2,2,2,3
+                densityYN2,density2,show_contour2,show_cmlt_contour2,cntrlinecml2=False,1.0,False,False,1200.0
                 # center coordinate
                 if df2.shape[1]>50:
                     df2_x,df2_y = df2.iloc[0,50],df2.iloc[0,51]
@@ -730,14 +743,40 @@ def Real_world():
                 else:
                     df2_x,df2_y = 25,25
                 df2_x = 25 if df2_x>=50 else df2_x
-                df2_y = 25 if df2_y>=50 else df2_y
-                col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
+                df2_y = 25 if df2_y>=50 else df2_y      
+                col2_center_x,col2_center_y =int(df2_x),int(df2_y)
                 min_2=np.int32(np.min([df2_x, 50-df2_x,df2_y,50-df2_y]))
-                col2_apothem = st.slider('apothem', 0, min_2, min_2,key ='2dmt')           
+                col2_apothem = min_2-1
                 pixels = (2+col2_apothem)**2
                 hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
-                (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
-                
+                (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])                
+                # Toggle Initialize the session state for content visibility
+                if 'show_data2_para' not in st.session_state:
+                    st.session_state.show_data2_para = False
+                # Toggle the visibility when the button is clicked
+                if st.button('Show/Hide advanced parameters',key='data2_toggle'):
+                    st.session_state.show_data2_para = not st.session_state.show_data2_para
+                # Display content based on the session state
+                if st.session_state.show_data2_para:                
+                    ### parameters ###
+                    # show node number set
+                    hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 10, 1,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 10, 1,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 10, 2,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 10, 2,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 10, 2,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 10, 3,key ='hs2_30')
+                    # show arrow density
+                    densityYN2 = st.checkbox('Show arrow',value=False,key ='densityYN2')
+                    density2 = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density2')
+                    # countour line 
+                    show_contour2 = st.checkbox('Show signal contour line',value=False,key ='show_contour2')            
+                    # countour line of culmulative
+                    show_cmlt_contour2 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour2')     
+                    cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml2')                 
+                    col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
+                    min_2=np.int32(np.min([df2_x, 50-df2_x,df2_y,50-df2_y]))
+                    col2_apothem = st.slider('apothem', 0, min_2-1, min_2-1,key ='2dmt')           
+                    pixels = (2+col2_apothem)**2
+                    hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
+                    (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
+                else:
+                    st.write("Click the button to show it.")                
             submitted = st.form_submit_button("Generate and compare!")              
     
         if submitted:
@@ -758,7 +797,8 @@ def Real_world():
                         mtx_pre.index=range(x_start-1,x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
+                            mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,signalCutoff=signalCutoff,
+                            colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
                             x_unit = (x_end-x_start+1),y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN1,density=density1,
@@ -781,7 +821,8 @@ def Real_world():
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,
+                            mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,signalCutoff=signalCutoff,
+                            colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
                             x_unit = (x_end-x_start+1),y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN1,density=density1,
@@ -795,10 +836,16 @@ def Real_world():
                             framelinewidth=framelinewidth,
                             fontname=fontname
                         )
+                    
+                    
                     mtx = mtx.reset_index(drop=True)
                     mtx_pre = mtx_pre.reset_index(drop=True)
                     mtx_delta=mtx-mtx_pre
                     mtx_delta = pd.DataFrame(np.where(mtx_delta<0,0,mtx_delta))
+                    # signal cutoff
+                    mtx[mtx<signalCutoff]=0.0
+                    mtx_delta[mtx_delta<signalCutoff]=0.0
+                    
                     ### Derivative index
                     drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col1_apothem]) - np.array(x_drvtv[-col1_apothem:][::-1])])) 
                     drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col1_apothem]) - np.array(y_drvtv[-col1_apothem:][::-1])])) 
@@ -825,9 +872,7 @@ def Real_world():
                     
             with col2_:      
                 contours_dfs = pd.DataFrame()
-                contours_cmltv_dfs = pd.DataFrame()
-    
-                
+                contours_cmltv_dfs = pd.DataFrame()            
                 df=df2
                 (x_start,x_end,y_start,y_end) = (col2_center_x-col2_apothem,col2_center_x+col2_apothem,col2_center_y-col2_apothem,col2_center_y+col2_apothem)
                 for i in range(1,7,1):
@@ -840,7 +885,8 @@ def Real_world():
                         mtx_pre.index=range(x_start-1,x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
+                            mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,signalCutoff=signalCutoff,
+                            colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
                             x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN2,density=density2,
@@ -863,7 +909,8 @@ def Real_world():
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,
+                            mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,signalCutoff=signalCutoff,
+                            colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
                             x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN2,density=density2,
@@ -878,10 +925,15 @@ def Real_world():
                             fontname=fontname
                             
                         )
+                    
                     mtx = mtx.reset_index(drop=True)
                     mtx_pre = mtx_pre.reset_index(drop=True)
                     mtx_delta=mtx-mtx_pre
                     mtx_delta = pd.DataFrame(np.where(mtx_delta<0,0,mtx_delta))
+                    # signal cutoff
+                    mtx[mtx<signalCutoff]=0.0
+                    mtx_delta[mtx_delta<signalCutoff]=0.0
+                    
                     ### Derivative index
                     drvt2_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col2_apothem]) - np.array(x_drvtv[-col2_apothem:][::-1])])) 
                     drvt2_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col2_apothem]) - np.array(y_drvtv[-col2_apothem:][::-1])])) 
@@ -912,8 +964,6 @@ def Real_world():
         
     step2 = st.checkbox('Step 2: show the measurement of the dissymmetry and diffusion of cumulative signals using Signal Inequality Index (SII) and Singal Coverage Index (SCI)',value=True)
     if step2:
-        DII1=np.sqrt(np.array(drvt1_index_x_sets)**2+np.array(drvt1_index_y_sets)**2)
-        DII2=np.sqrt(np.array(drvt2_index_x_sets)**2+np.array(drvt2_index_y_sets)**2)
         _start = 0
         _end = 3
         col1__, col2__ = st.columns(2)
@@ -943,9 +993,6 @@ def Real_world():
 
 
 
-
-
-
 @st.cache_data(max_entries=1,persist="disk")
 def get_example(filename=''):
     df = pd.read_csv(r'./'+filename, header=None,sep="\t")
@@ -959,12 +1006,17 @@ def upload():
     st.sidebar.markdown(get_table_download_link(example,fileName = "upload",headermark=False,indexmark=False), unsafe_allow_html=True)
     #file = 'yours'
     #st.sidebar.markdown('You uploaded a matrix `%s`' % file)
+
+    ###################
+    ### data upload ###
+    ###################
     
     st.markdown("## Data Upload")
     # Upload the dataset and save as csv
     st.markdown("### Upload a csv file for analysis.") 
     st.write("\n")
 
+            
     # Code to read a single file 
     uploaded_file = st.file_uploader("Choose a file", type = ['csv', 'xlsx', 'txt'])
     data = pd.DataFrame()
@@ -994,61 +1046,81 @@ def upload():
             st.session_state['data'] = data
             t_time = np.int32(data.shape[0]/data.shape[1])
             cmlt_contour_color = generate_colors(t_time)
-             
+            col,colhide = st.columns([6,1])
             
             with st.form("form_"):
-                df = st.session_state['data']
-                fontnames = sorted(set([f.name for f in matplotlib.font_manager.fontManager.ttflist]))
-                ### parameters ###
-                # pdi for png figure
-                dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
-                # linewidth
-                linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
-                # frame line width
-                framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
-                # font family
-                fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
-                # tick_labelsize
-                tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    #            
-                # labelweight
-                labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #           
-                # colorLevels
-                colorLevels = st.slider('Select a range of values',min_value=0,max_value=5000,value=(0, 5000),key ='colorLevels')
-                
-                ### parameters ###
-                hs_set = []
-                hs_btm_set = []
-                
-                # show node number set
-                for t_idx in range(0,t_time,1):
-                    hs_ = st.slider('hotspot nodes at timepoint '+str(t_idx), 0, 10, 1,key ='hs_'+str(t_idx))
-                    hs_set.append(hs_)
-                # show arrow density
-                densityYN = st.checkbox('Show arrow',value=False,key ='densityYN')
-                density = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density') 
-                
-                # countour line 
-                show_contour = st.checkbox('Show signal contour line',value=False,key ='show_contour')         
-                
-                # countour line of cumulative
-                show_cmlt_contour = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour')
-                cntrlinecml = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml')
-                       
-                # center coordinate
-                df_x = np.int32(df.shape[1]/2)
-                df_y = np.int32(df.shape[1]/2)
-                
-                col_center_x,col_center_y = st.slider('center x coordinate', 0, df.shape[1], np.int32(df_x),key ='1x'),st.slider('center y coordinate', 0, df.shape[1], np.int32(df_y),key ='1y')
-
-                min_=np.int32(np.min([col_center_x, df.shape[1]-col_center_x,col_center_y,df.shape[1]-col_center_y]))
-                # apothem 
-                col_apothem = st.slider('apothem', 0, min_-1, min_-1,key ='dmt')          
-                pixels = (2+col_apothem)**2
-                
-                for t_idx in range(0,t_time,1):
-                    hs_btm = pixels-3 if pixels <= 200 else 200
-                    hs_btm_set.append(hs_btm)
-                (top1,btm1) = ([hs_],[hs_btm])      
+                with col:
+                    df = st.session_state['data']
+                    fontnames = sorted(set([f.name for f in matplotlib.font_manager.fontManager.ttflist]))
+                    ### parameters ###
+                    # pdi for png figure
+                    dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
+                    # linewidth
+                    linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
+                    # frame line width
+                    framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
+                    # font family
+                    fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
+                    # tick_labelsize
+                    tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    #            
+                    # labelweight
+                    labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #        
+                    # signal noise cutoff
+                    signalCutoff_ = st.slider('Enter signal noise cutoff',1, 4999, 0,key ='signalCutoff_')    #                            
+                    # colorLevels
+                    colorLevels_ = st.slider('Select a range of values for coloring',min_value=signalCutoff_,max_value=5000,value=(signalCutoff_,5000),key ='colorLevels_')
+                    
+                    ### parameters ###
+                    # center coordinate
+                    df_x = np.int32(df.shape[1]/2)
+                    df_y = np.int32(df.shape[1]/2)     
+                    hs_set,hs_btm_set = list(np.repeat(1,t_time)),list(np.repeat(1,t_time))
+                    densityYN,density,show_contour,show_cmlt_contour,cntrlinecml=False,1,False,False,1200.0
+                    col_center_x,col_center_y=np.int32(df_x),np.int32(df_y)
+                    min_=np.int32(np.min([col_center_x, df.shape[1]-col_center_x,col_center_y,df.shape[1]-col_center_y]))
+                    col_apothem = min_-1
+                    pixels = (2+col_apothem)**2
+                    for t_idx in range(0,t_time,1):
+                        hs_btm = pixels-3 if pixels <= 200 else 200
+                        hs_btm_set.append(hs_btm)
+                    (top,btm) = (hs_set,hs_btm_set)                    
+                    # Toggle Initialize the session state for content visibility
+                    if 'show_data_para' not in st.session_state:
+                        st.session_state.show_data_para = False
+                    # Toggle the visibility when the button is clicked
+                    if st.button('Show/Hide advanced parameters',key='data_toggle'):
+                        st.session_state.show_data_para = not st.session_state.show_data_para
+                    # Display content based on the session state
+                    if st.session_state.show_data_para:  
+                        ### parameters ###
+                        hs_set = []
+                        hs_btm_set = []                        
+                        # show node number set
+                        for t_idx in range(0,t_time,1):
+                            hs_ = st.slider('hotspot nodes at timepoint '+str(t_idx), 0, 10, 1,key ='hs_'+str(t_idx))
+                            hs_set.append(hs_)
+                        # show arrow density
+                        densityYN = st.checkbox('Show arrow',value=False,key ='densityYN')
+                        density = st.slider('arrow density', 0.0, 10.0, 1.0,key ='density') 
+                        
+                        # countour line 
+                        show_contour = st.checkbox('Show signal contour line',value=False,key ='show_contour')         
+                        
+                        # countour line of cumulative
+                        show_cmlt_contour = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour')
+                        cntrlinecml = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml')
+                        col_center_x,col_center_y = st.slider('center x coordinate', 0, df.shape[1], np.int32(df_x),key ='1x'),st.slider('center y coordinate', 0, df.shape[1], np.int32(df_y),key ='1y')
+                        min_=np.int32(np.min([col_center_x, df.shape[1]-col_center_x,col_center_y,df.shape[1]-col_center_y]))
+                        # apothem 
+                        col_apothem = st.slider('apothem', 0, min_-1, min_-1,key ='dmt')          
+                        pixels = (2+col_apothem)**2                       
+                        for t_idx in range(0,t_time,1):
+                            hs_btm = pixels-3 if pixels <= 200 else 200
+                            hs_btm_set.append(hs_btm)
+                        (top,btm) = (hs_set,hs_btm_set)
+                    else:
+                        st.write("Click the button to show it.")               
+                    
                 submitted = st.form_submit_button("Generate!")
                 
             if submitted:
@@ -1056,8 +1128,6 @@ def upload():
                 contours_cmltv_dfs = pd.DataFrame()
                 (x_start,x_end,y_start,y_end) = (col_center_x-col_apothem,col_center_x+col_apothem,col_center_y-col_apothem,col_center_y+col_apothem)  
                 rangeVal = df.shape[1]
-    
-    
                 
                 for t in range(0,t_time,1):
                     #st.write(t)
@@ -1071,7 +1141,8 @@ def upload():
                         mtx_pre.index = range((x_start-1),x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,colorLevels=np.linspace(colorLevels[0],colorLevels[1],7),
+                            mtx=mtx,top=top[t],btm=btm[t],previous = mtx_pre,signalCutoff=signalCutoff_,
+                            colorLevels=np.linspace(colorLevels_[0],colorLevels_[1],7),
                             x_unit = (x_end-x_start+1), y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[t],
                             densityYN=densityYN,density=density,
@@ -1094,7 +1165,8 @@ def upload():
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]                  
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=hs_set[t],btm=hs_btm_set[t],previous = mtx_pre,colorLevels=np.linspace(colorLevels[0],colorLevels[1],7),
+                            mtx=mtx,top=top[t],btm=btm[t],previous = mtx_pre,signalCutoff=signalCutoff_,
+                            colorLevels=np.linspace(colorLevels_[0],colorLevels_[1],7),
                             x_unit = (x_end-x_start+1), y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[t],
                             densityYN=densityYN,density=density,
@@ -1112,11 +1184,14 @@ def upload():
                     mtx_pre = mtx_pre.reset_index(drop=True)
                     mtx_delta=mtx-mtx_pre
                     mtx_delta = pd.DataFrame(np.where(mtx_delta<0,0,mtx_delta))
+                    # signal cutoff
+                    mtx[mtx<signalCutoff_]=0.0
+                    mtx_delta[mtx_delta<signalCutoff_]=0.0
+                    
                     ### Derivative index
                     drvt_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col_apothem]) - np.array(x_drvtv[-col_apothem:][::-1])])) 
                     drvt_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col_apothem]) - np.array(y_drvtv[-col_apothem:][::-1])])) 
-                       
-            
+                          
                     ### contour line export
                     if contours:
                         contours_df = get_contourline_df(contours)
