@@ -637,22 +637,35 @@ def Real_world():
         ##########################################
         ### general parameters for the figures ###
         ##########################################
-        # pdi for png figure
-        dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
-        # linewidth
-        linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
-        # frame line width
-        framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
-        # font family
-        fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
-        # tick_labelsize
-        tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    # 
-        # labelweight
-        labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #     
         # signal noise cutoff
         signalCutoff = st.slider('Enter signal noise cutoff',1, 5000-1, 0,key ='signalCutoff')    #        
         # colorLevels
         colorLevelsSet = st.slider('Select a range of values for coloring',min_value=signalCutoff,max_value=5000,value=(signalCutoff, 5000),key ='colorLevelsSet')
+
+        ### parameters for figure ###
+        dpi_value,linewidth,framelinewidth,fontname,tick_labelsize,labelweight=500.0,10,10,fontnames[0],20,'bold'
+        # Toggle Initialize the session state for content visibility
+        if 'show_fig_para' not in st.session_state:
+            st.session_state.show_fig_para = False
+        # Toggle the visibility when the button is clicked
+        if st.button('Show/Hide parameters for figure',key='show_fig_para1'):
+            st.session_state.show_fig_para = not st.session_state.show_fig_para  
+        # Display content based on the session state
+        if st.session_state.show_fig_para:        
+            # pdi for png figure
+            dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
+            # linewidth
+            linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
+            # frame line width
+            framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
+            # font family
+            fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
+            # tick_labelsize
+            tick_labelsize = st.slider('tick label size',1, 80, 20,key ='tick_labelsize')    # 
+            # labelweight
+            labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #     
+        else:
+            st.write("Click the button to show it.")
 
 
         with st.form("form"):    
@@ -719,8 +732,8 @@ def Real_world():
                     min_1=np.int32(np.min([df1_x, 50-df1_x,df1_y,50-df1_y]))
                     # apothem
                     col1_apothem = st.slider('Enter a number for apothem', 0, min_1-1, min_1-1,key ='1dmt')          
-                    pixels = (2+col1_apothem)**2
-                    hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
+                    pixels = (col1_apothem)**2
+                    hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels if pixels <= 200 else 200
                     (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
                 else:
                     st.write("Click the button to show it.")
@@ -782,8 +795,8 @@ def Real_world():
                     col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
                     min_2=np.int32(np.min([df2_x, 50-df2_x,df2_y,50-df2_y]))
                     col2_apothem = st.slider('Enter a number for apothem', 0, min_2-1, min_2-1,key ='2dmt')           
-                    pixels = (2+col2_apothem)**2
-                    hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
+                    pixels = (col1_apothem)**2
+                    hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels if pixels <= 200 else 200
                     (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
                 else:
                     st.write("Click the button to show it.")                
@@ -1049,37 +1062,54 @@ def upload():
     st.session_state['data'] = pd.DataFrame() if 'data' not in st.session_state.keys() else st.session_state['data']
     ''' Load the data and save the columns with categories as a dataframe. 
     This section also allows changes in the numerical and categorical columns. '''
+    
     if st.button("Load Data") or st.session_state['data'].shape[0]>0:   
         if data.shape[0]>0:
             # Raw data 
             st.dataframe(data)
+
+            # Adding a horizontal line
+            st.markdown("---")
+            st.markdown("## Generate S2MAP")
             st.session_state['data'] = data
             t_time = np.int32(data.shape[0]/data.shape[1])
             cmlt_contour_color = generate_colors(t_time)
             col,colhide = st.columns([6,1])
-            
+            # signal noise cutoff
+            signalCutoff_ = st.slider('Enter signal noise cutoff',1, 4999, 0,key ='signalCutoff_')    #                            
+            # colorLevels
+            colorLevels_ = st.slider('Select a range of values for coloring',min_value=signalCutoff_,max_value=5000,value=(signalCutoff_,5000),key ='colorLevels_')            
             with st.form("form_"):
                 with col:
                     df = st.session_state['data']
                     fontnames = sorted(set([f.name for f in matplotlib.font_manager.fontManager.ttflist]))
-                    ### parameters ###
-                    # pdi for png figure
-                    dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
-                    # linewidth
-                    linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
-                    # frame line width
-                    framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
-                    # font family
-                    fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
-                    # tick_labelsize
-                    tick_labelsize = st.slider('Enter tick label size',1, 80, 20,key ='tick_labelsize')    #            
-                    # labelweight
-                    labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #        
-                    # signal noise cutoff
-                    signalCutoff_ = st.slider('Enter signal noise cutoff',1, 4999, 0,key ='signalCutoff_')    #                            
-                    # colorLevels
-                    colorLevels_ = st.slider('Select a range of values for coloring',min_value=signalCutoff_,max_value=5000,value=(signalCutoff_,5000),key ='colorLevels_')
+    
+                    ### parameters for figure ###
+                    dpi_value,linewidth,framelinewidth,fontname,tick_labelsize,labelweight=500.0,10,10,fontnames[0],20,'bold'
+                    # Toggle Initialize the session state for content visibility
+                    if 'show_fig_para_' not in st.session_state:
+                        st.session_state.show_fig_para_ = False
+                    # Toggle the visibility when the button is clicked
+                    if st.button('Show/Hide parameters for figure',key='show_fig_para2'):
+                        st.session_state.show_fig_para_ = not st.session_state.show_fig_para_ 
+                    # Display content based on the session state
+                    if st.session_state.show_fig_para_:
+                        # pdi for png figure
+                        dpi_value = st.number_input("Enter a number for the figure pixel in the exported png file", min_value=1.0, max_value=1000.0, value=500.0, step=100.0,key ='dpi_value')
+                        # linewidth
+                        linewidth = st.number_input("Enter linewidth for the DII figure", min_value=1, max_value=20, value=10, step=1,key ='linewidth')   
+                        # frame line width
+                        framelinewidth= st.number_input("Enter frame linewidth for the figures", min_value=1, max_value=20, value=10, step=1,key ='framelinewidth')   
+                        # font family
+                        fontname = st.selectbox('Select a font style all the figure\'s labels', fontnames,key='fontnames')
+                        # tick_labelsize
+                        tick_labelsize = st.slider('Enter tick label size',1, 80, 20,key ='tick_labelsize')    #            
+                        # labelweight
+                        labelweight = st.selectbox('Select an option for tick label style', ['bold','normal','heavy'],key='labelweight')    #        
 
+                    else:
+                        st.write("Click the button to show it.") 
+        
                     ### parameters ###
                     # center coordinate
                     RBF_function_ = 'linear'
