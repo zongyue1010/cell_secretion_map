@@ -324,6 +324,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     # signal cutoff
     mtx[mtx<signalCutoff]=0
     mtx_pre[mtx_pre<signalCutoff]=0
+
     
     ### delta changes ###
     Z = np.array(mtx.reset_index(drop=True).subtract(mtx_pre.reset_index(drop=True)))[:,::-1]     
