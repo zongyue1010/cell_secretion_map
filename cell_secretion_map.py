@@ -455,8 +455,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
         #ax.spines[axis].set_color('red')    # change color
     
     # Save the plot as png and pdf files
-    plt.savefig('./output/'+timeline+".png",dpi=dpi_value) # , bbox_inches='tight'
-    plt.savefig('./output/'+timeline+".pdf", format='pdf') # , bbox_inches='tight'
+    #plt.savefig('./output/'+timeline+".png",dpi=dpi_value) # , bbox_inches='tight'
+    #plt.savefig('./output/'+timeline+".pdf", format='pdf') # , bbox_inches='tight'
 
     # Adjust the margins (decrease them)
     plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
@@ -950,8 +950,7 @@ def Real_world():
                             linewidth = linewidth,
                             labelweight=labelweight,
                             framelinewidth=framelinewidth,
-                            fontname=fontname
-                            
+                            fontname=fontname                           
                         )
                     
                     mtx = mtx.reset_index(drop=True)
@@ -984,12 +983,11 @@ def Real_world():
                 st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
                 st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
         ### zip files and download ###         
-        create_zip()             
-        # Provide download link
-        with open("figures.zip", "rb") as f:
-            st.download_button("Download Figures", f.read(), file_name="figures.zip")
-            
-        
+        #create_zip()             
+        ## Provide download link
+        #with open("figures.zip", "rb") as f:
+        #    st.download_button("Download Figures", f.read(), file_name="figures.zip")
+                   
     step2 = st.checkbox('Step 2: show the measurement of the dissymmetry and diffusion of cumulative signals using Signal Inequality Index (SII) and Singal Coverage Index (SCI)',value=True)
     if step2:
         _start = 0
