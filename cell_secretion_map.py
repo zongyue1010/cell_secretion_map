@@ -128,10 +128,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pylab import *
 
-def plot_3D(mtx, z_max=5000,**kwargs):
+def plot_3D(mtx, z_max=5000,signalCutoff=0,**kwargs):
     
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(211, projection='3d')
+    fig = plt.figure(figsize=(8, 8))
+    ax = fig.add_subplot(121, projection='3d')
     # load the last stage of the signals
     mtx_pre = kwargs['previous'] if 'previous' in kwargs.keys() else pd.DataFrame(np.zeros(shape=(50, 50)))
     
@@ -143,9 +143,12 @@ def plot_3D(mtx, z_max=5000,**kwargs):
     dx = 0.5 * np.ones_like(zpos)
     dy = dx.copy()
     delta_dz = mtx.values.flatten() - mtx_pre.values.flatten()
-    delta_dz[delta_dz<0] = 0 # replace the negative values by zero
-    #print(delta_dz)
     dz_pre = mtx_pre.values.flatten()
+
+    # signal cutoff
+    delta_dz[delta_dz<signalCutoff] = 0 # replace the negative values by zero
+    dz_pre[dz_pre<signalCutoff] = 0 # replace the negative values by zero
+    
     #cs = ['r', 'g', 'b', 'y', 'c'] * ly   
     #print(xpos.shape)
     #print(ypos.shape)
@@ -181,12 +184,12 @@ def plot_3D(mtx, z_max=5000,**kwargs):
     ################################
     ### 3D terrain delta changes ###
     ################################
-    ax2 = fig.add_subplot(212, projection='3d')
+    ax2 = fig.add_subplot(122, projection='3d') # 212
     #X,Y = np.linspace(0 , lx , lx ),np.linspace(0 , ly , ly )
     X, Y = np.arange(0,lx,1),np.arange(0,ly,1)    # Set up a mesh of positions
     X, Y = np.meshgrid(Y,X)
     Z = np.array(mtx.reset_index(drop=True).subtract(mtx_pre.reset_index(drop=True)))
-    Z[Z<0] = 0
+    Z[Z<signalCutoff] = 0
     #print(Z.shape)
     #print(X.shape)
     #print(Y.shape)
@@ -214,6 +217,7 @@ def plot_3D(mtx, z_max=5000,**kwargs):
     #ax.yaxis.set_ticklabels(mtx.index)
     ax2.invert_xaxis()
     plt.show()
+    st.pyplot(fig)
     return(X,Y,Z)
 
 def plot_inequality(mtx,**kwargs):
@@ -336,8 +340,8 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     (mask,mask_top,mask_btm) = GET_MASK(z=z,top=top,btm=btm)
     (mask_cmltv,mask_top_cmltv,mask_btm_cmltv) = GET_MASK(z=z_cmltv,top=top,btm=btm)
 
-    func = Rbf(xpos[mask],ypos[mask], z[mask], function=RBF_function)
-    func_cmltv = Rbf(xpos[mask_cmltv],ypos[mask_cmltv], z_cmltv[mask_cmltv], function=RBF_function)
+    func = Rbf(xpos,ypos, z, function=RBF_function)#func = Rbf(xpos[mask],ypos[mask], z[mask], function=RBF_function)
+    func_cmltv = Rbf(xpos,ypos, z_cmltv, function=RBF_function)#func_cmltv = Rbf(xpos[mask_cmltv],ypos[mask_cmltv], z_cmltv[mask_cmltv], function=RBF_function)
     zi_cmltv,zi = func_cmltv(xi, yi),func(xi, yi) 
     
     # get the positions of the masked cumulative expression
@@ -818,7 +822,7 @@ def Real_world():
                         mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start+1, y_end-y_start+1)))
                         mtx_pre.columns = range(y_start-1,y_end)
                         mtx_pre.index=range(x_start-1,x_end)
-                        (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
+                        (X,Y,Z)=plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,signalCutoff=signalCutoff,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
@@ -842,7 +846,7 @@ def Real_world():
                         # 5 mins interval
                         mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50] 
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]
-                        (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
+                        (X,Y,Z) = plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,signalCutoff=signalCutoff,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
@@ -906,7 +910,7 @@ def Real_world():
                         mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start+1, y_end-y_start+1)))
                         mtx_pre.columns = range(y_start-1,y_end)
                         mtx_pre.index=range(x_start-1,x_end)
-                        (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
+                        (X,Y,Z)=plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,signalCutoff=signalCutoff,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
@@ -930,7 +934,7 @@ def Real_world():
                         # 5 mins interval
                         mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50]    
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]
-                        (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
+                        (X,Y,Z) = plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,signalCutoff=signalCutoff,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
@@ -1185,7 +1189,7 @@ def upload():
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]  
                         mtx_pre.columns = range((y_start-1),y_end)
                         mtx_pre.index = range((x_start-1),x_end)
-                        (X,Y,Z)=plot_3D(mtx,previous = mtx_pre)
+                        (X,Y,Z)=plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff_)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top[t],btm=btm[t],previous = mtx_pre,signalCutoff=signalCutoff_,
                             colorLevels=np.linspace(colorLevels_[0],colorLevels_[1],7),
@@ -1209,7 +1213,7 @@ def upload():
                         # 5 mins interval          
                         mtx_pre = df.iloc[(t-1)*rangeVal:(t)*rangeVal,0:rangeVal]    
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]                  
-                        (X,Y,Z) = plot_3D(mtx,previous = mtx_pre)
+                        (X,Y,Z) = plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff_)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
                             mtx=mtx,top=top[t],btm=btm[t],previous = mtx_pre,signalCutoff=signalCutoff_,RBF_function=RBF_function_,
                             colorLevels=np.linspace(colorLevels_[0],colorLevels_[1],7),
