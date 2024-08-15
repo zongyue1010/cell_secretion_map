@@ -292,7 +292,7 @@ def save_as_pdf(buffer,pdf_filename):
     c.save()
     st.success(f'Successfully saved as {pdf_filename}')
 
-def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),signalCutoff=0,RBF_function='linear',**kwargs):
+def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),signalCutoff=0,RBF_function='gaussian',**kwargs):
     # -- parameters --------------------
     lx,ly= np.size(mtx,0),np.size(mtx,1) # Work out matrix dimensions  
     cmlt_contour_color = kwargs['cmlt_contour_color'] if 'cmlt_contour_color' in kwargs.keys() else 'red'
@@ -719,7 +719,7 @@ def Real_world():
                 if st.session_state.show_data1_para:
                     ### parameters ###
                     # interpolate function
-                    RBF_function1 = st.selectbox('Select an option for interpolation function', ['linear','gaussian','cubic','quintic','multiquadric','thin_plate','inverse'],key='RBF_function1')                     
+                    RBF_function1 = st.selectbox('Select an option for interpolation function', ['gaussian','cubic','quintic','multiquadric','thin_plate','inverse','linear'],key='RBF_function1')                     
                     # show node number set
                     st.write("Enter the number of signals for interpolation:")
                     hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = st.slider('5-min hotspot nodes', 0, 100, 1,key ='hs1_5'),st.slider('10-min hotspot nodes', 0, 100, 1,key ='hs1_10'),st.slider('15-min hotspot nodes', 0, 100, 2,key ='hs1_15'),st.slider('20-min hotspot nodes', 0, 100, 2,key ='hs1_20'),st.slider('25-min hotspot nodes', 0, 100, 2,key ='hs1_25'),st.slider('30-min hotspot nodes', 0, 100, 3,key ='hs1_30')
@@ -785,7 +785,7 @@ def Real_world():
                 if st.session_state.show_data2_para:                
                     ### parameters ###
                     # interpolate function
-                    RBF_function2 = st.selectbox('Select an option for interpolation function', ['linear','gaussian','cubic','quintic','multiquadric','thin_plate','inverse'],key='RBF_function2')                      
+                    RBF_function2 = st.selectbox('Select an option for interpolation function', ['gaussian','cubic','quintic','multiquadric','thin_plate','inverse','linear'],key='RBF_function2')                      
                     # show node number set
                     st.write("Enter the number of signals for interpolation:")
                     hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = st.slider('5-min hotspot nodes', 0, 100, 1,key ='hs2_5'),st.slider('10-min hotspot nodes', 0, 100, 1,key ='hs2_10'),st.slider('15-min hotspot nodes', 0, 100, 2,key ='hs2_15'),st.slider('20-min hotspot nodes', 0, 100, 2,key ='hs2_20'),st.slider('25-min hotspot nodes', 0, 100, 2,key ='hs2_25'),st.slider('30-min hotspot nodes', 0, 100, 3,key ='hs2_30')
@@ -988,7 +988,7 @@ def Real_world():
         #with open("figures.zip", "rb") as f:
         #    st.download_button("Download Figures", f.read(), file_name="figures.zip")
                    
-    step2 = st.checkbox('Step 2: show the measurement of the dissymmetry and diffusion of cumulative signals using Signal Inequality Index (SII) and Singal Coverage Index (SCI)',value=True)
+    step2 = st.checkbox('Step 2: show the measurement of the dissymmetry and diffusion of cumulative signals using Signal Inequality Index (SII) and Signal Coverage Index (SCI)',value=True)
     if step2:
         _start = 0
         _end = 3
@@ -1140,7 +1140,7 @@ def upload():
                         
                         ### parameters ###
                         # interpolate function
-                        RBF_function_ = st.selectbox('Select an option for interpolation function', ['linear','gaussian','cubic','quintic','multiquadric','thin_plate','inverse'],key='RBF_function_')   
+                        RBF_function_ = st.selectbox('Select an option for interpolation function', ['gaussian','cubic','quintic','multiquadric','thin_plate','inverse','linear'],key='RBF_function_')   
                         hs_set = []                                      
                         # show node number set
                         st.write("Enter the number of signals for interpolation:")
