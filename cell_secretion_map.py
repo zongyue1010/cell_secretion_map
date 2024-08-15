@@ -689,7 +689,7 @@ def Real_world():
                 df1 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option1)
 
                 ### parameters ###
-                RBF_function1 = 'linear'
+                RBF_function1 = 'gaussian'
                 hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30 = 1,1,2,2,2,3
                 densityYN1,density1,show_contour1,show_cmlt_contour1,cntrlinecml1=False,1.0,False,False,1200.0
                 # center coordinate
@@ -755,7 +755,7 @@ def Real_world():
                 df2 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option2)
 
                 ### parameters ###
-                RBF_function2 = 'linear'
+                RBF_function2 = 'gaussian'
                 hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30 = 1,1,2,2,2,3
                 densityYN2,density2,show_contour2,show_cmlt_contour2,cntrlinecml2=False,1.0,False,False,1200.0
                 # center coordinate
@@ -825,7 +825,7 @@ def Real_world():
                         mtx_pre.index=range(x_start-1,x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,signalCutoff=signalCutoff,
+                            mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,signalCutoff=signalCutoff,RBF_function=RBF_function1,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
                             x_unit = (x_end-x_start+1),y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[i],
@@ -849,7 +849,7 @@ def Real_world():
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,signalCutoff=signalCutoff,
+                            mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,signalCutoff=signalCutoff,RBF_function=RBF_function1,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
                             x_unit = (x_end-x_start+1),y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[i],
@@ -913,7 +913,7 @@ def Real_world():
                         mtx_pre.index=range(x_start-1,x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,signalCutoff=signalCutoff,
+                            mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,signalCutoff=signalCutoff,RBF_function=RBF_function2,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
                             x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
                             cmlt_contour_color=cmlt_contour_color[i],
@@ -937,7 +937,7 @@ def Real_world():
                         mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,signalCutoff=signalCutoff,
+                            mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,signalCutoff=signalCutoff,RBF_function=RBF_function2,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
                             x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
                             cmlt_contour_color=cmlt_contour_color[i],
@@ -1168,8 +1168,7 @@ def upload():
                             hs_btm_set.append(hs_btm)
                         (top,btm) = (hs_set,hs_btm_set)
                     else:
-                        st.write("Click the button to show it.")               
-                    
+                        st.write("Click the button to show it.")                   
                 submitted = st.form_submit_button("Generate!")
                 
             if submitted:
@@ -1190,7 +1189,7 @@ def upload():
                         mtx_pre.index = range((x_start-1),x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff_)
                         (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
-                            mtx=mtx,top=top[t],btm=btm[t],previous = mtx_pre,signalCutoff=signalCutoff_,
+                            mtx=mtx,top=top[t],btm=btm[t],previous = mtx_pre,signalCutoff=signalCutoff_,RBF_function=RBF_function_,
                             colorLevels=np.linspace(colorLevels_[0],colorLevels_[1],7),
                             x_unit = (x_end-x_start+1), y_unit = (y_end-y_start+1),
                             cmlt_contour_color=cmlt_contour_color[t],
