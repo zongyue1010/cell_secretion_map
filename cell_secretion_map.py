@@ -101,8 +101,8 @@ def REGISTER_TERRAIN_MAP(**kwargs):
     full=np.power(10,4)*2 # the whole scale of the number
     alpha = kwargs['alpha'] if 'alpha' in kwargs.keys() else 0 # to grey the area that below the cutoff values
     t = int(full*alpha)
-    top = cm.get_cmap('Blues_r', full) 
-    bottom = cm.get_cmap('Reds', full)
+    top = plt.get_cmap('Blues_r', full) 
+    bottom = plt.get_cmap('Reds', full)
     fade = kwargs['fade'] if 'fade' in kwargs.keys() else [0,0,0,1]
     if alpha == 0:
         newcolors = np.vstack((
@@ -111,7 +111,7 @@ def REGISTER_TERRAIN_MAP(**kwargs):
                bottom(np.linspace(0, 1, full))[int(t):full]
             ))
     else:
-        gray = cm.get_cmap('Greys', t)
+        gray = plt.get_cmap('Greys', t)
         newcolors = np.vstack((
                         top(np.linspace(0, 1, full))[0:int(full-t)],
                            np.array([[0,0,0,0.5]]*(t-1)),
@@ -246,7 +246,7 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 ### custome the levels of the colors ###
 customRange = list(np.linspace(500,5000,7))
 full = len(customRange)
-top = cm.get_cmap('rainbow', full)
+top = plt.get_cmap('rainbow', full)
 newcolors = np.vstack(top(np.linspace(0, 1, full)),)
 newcmp = ListedColormap(newcolors, name='newcmp')
 ########################
