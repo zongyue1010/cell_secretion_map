@@ -65,6 +65,27 @@ import matplotlib.colors as col
 # to make plot interactive
 #%matplotlib inline
 
+# create zip file from list of figs
+def figs2zip(figs: list[plt.figure]) -> bytes:
+    """THIS WILL BE RUN ON EVERY SCRIPT RUN"""
+    import io 
+    import zipfile
+    zip_buf = io.BytesIO()
+    with zipfile.ZipFile(file=zip_buf, mode='w', compression=zipfile.ZIP_DEFLATED) as z:
+        for i,fig in enumerate(figs):
+            buf = io.BytesIO()
+            # Save the plot as png and pdf files
+            #plt.savefig('./output/'+timeline+".png",dpi=dpi_value) # , bbox_inches='tight'
+            #plt.savefig('./output/'+timeline+".pdf", format='pdf') # , bbox_inches='tight'            
+            fig.savefig(buf, format='png', bbox_inches='tight')
+            filename = f'{i}.png'
+            z.writestr(zinfo_or_arcname=filename, data=buf.getvalue() )
+            buf.close()
+    
+    buf = zip_buf.getvalue()
+    zip_buf.close()
+    return buf
+
 #@st.cache(allow_output_mutation=True)
 def get_table_download_link(df, **kwargs):
     """Generates a link allowing the data in a given panda dataframe to be downloaded
@@ -216,7 +237,7 @@ def plot_3D(mtx, z_max=5000,signalCutoff=0,**kwargs):
     #ax.xaxis.set_ticklabels(mtx.columns)
     #ax.yaxis.set_ticklabels(mtx.index)
     ax2.invert_xaxis()
-    plt.show()
+    #plt.show()
     st.pyplot(fig)
     return(X,Y,Z)
 
@@ -406,7 +427,6 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     x_drvtv = list(DERIVATIVE(x_inequ,1))
     y_drvtv = list(DERIVATIVE(y_inequ,1))
 
-
     ### plot SII (signal inequality index) ###
     # Set the maximum number of ticks on the x-axis
     max_ticks = 3
@@ -453,27 +473,23 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
         ax1.spines[axis].set_linewidth(framelinewidth)  # change width
         ax2.spines[axis].set_linewidth(framelinewidth)  # change width
         #ax.spines[axis].set_color('red')    # change color
-    
-    # Save the plot as png and pdf files
-    #plt.savefig('./output/'+timeline+".png",dpi=dpi_value) # , bbox_inches='tight'
-    #plt.savefig('./output/'+timeline+".pdf", format='pdf') # , bbox_inches='tight'
 
     # Adjust the margins (decrease them)
     plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
-    plt.show()
+    #plt.show()
     #st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot(fig)
        
-    ### save figure buffer ###
-    buffer = io.BytesIO()
-    plt.savefig(buffer, format='pdf')
-    buffer.seek(0)
+    #### save figure buffer ###
+    #buffer = io.BytesIO()
+    #plt.savefig(buffer, format='pdf')
+
     ## Add a button to save as PDF
     #if st.button('Save as PDF '+timeline):
     #    save_as_pdf(buffer,timeline+'_figure.pdf')
-    if st.download_button("Download PDF "+timeline, data=buffer, file_name=timeline+"_figure.pdf", mime="application/pdf"):
-        st.success("File download initiated!")
-    return(x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv)  
+    
+    #st.success("File download initiated!")
+    return(x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv,fig)  
 
 def create_zip():
     with zipfile.ZipFile("figures.zip", "w") as zipf:
@@ -594,8 +610,7 @@ def LOAD_DATA(inputDir='',dataDir='',sheet_name=''):
 def Real_world():
     st.header("Real-world Study")
     st.sidebar.subheader('Data source')
-    
-    
+     
     inputDir='input/'
     from os import walk
     f = []
@@ -617,13 +632,12 @@ def Real_world():
     # Get a list of all sheet names
     sheet_names = workbook.sheetnames
     
-    
     step1 = st.checkbox('Step 1: show the heatmap and delta changes of the cell signals',value=True)
     cmlt_contour_color = ['blue','blue','blue','orange','orange','red','red']
     
-    ( drvt1_index_x_sets,  drvt1_index_y_sets) = ([],[])
-    ( drvt2_index_x_sets,  drvt2_index_y_sets) = ([],[])
-    ( selected_option1,  selected_option2) = ("","")
+    (drvt1_index_x_sets,  drvt1_index_y_sets) = ([],[])
+    (drvt2_index_x_sets,  drvt2_index_y_sets) = ([],[])
+    (selected_option1,  selected_option2) = ("","")
 
     ##############################
     ### font family suggestion ###
@@ -705,7 +719,7 @@ def Real_world():
                 df1_y = 25 if df1_y>=50 else df1_y      
                 col1_center_x,col1_center_y =int(df1_x),int(df1_y)
                 min_1=np.int32(np.min([df1_x, 50-df1_x,df1_y,50-df1_y]))
-                col1_apothem = min_1-1
+                col1_apothem = min_1
                 pixels = (2+col1_apothem)**2
                 hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels-3 if pixels <= 200 else 200
                 (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])      
@@ -733,10 +747,10 @@ def Real_world():
                     # countour line of cumulative
                     show_cmlt_contour1 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour1')
                     cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml1')                  
-                    col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 50, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 50, int(df1_y),key ='1y') 
+                    col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 49, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 49, int(df1_y),key ='1y') 
                     min_1=np.int32(np.min([df1_x, 50-df1_x,df1_y,50-df1_y]))
                     # apothem
-                    col1_apothem = st.slider('Enter a number for apothem', 0, min_1-1, min_1-1,key ='1dmt')          
+                    col1_apothem = st.slider('Enter a number for apothem', 0, min_1, min_1,key ='1dmt')          
                     pixels = (col1_apothem)**2
                     hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels if pixels <= 200 else 200
                     (top1,btm1) = ([0,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30],[1,1,1,1,hs1_btm_20,hs1_btm_25,hs1_btm_30])
@@ -771,8 +785,8 @@ def Real_world():
                 df2_y = 25 if df2_y>=50 else df2_y      
                 col2_center_x,col2_center_y =int(df2_x),int(df2_y)
                 min_2=np.int32(np.min([df2_x, 50-df2_x,df2_y,50-df2_y]))
-                col2_apothem = min_2-1
-                pixels = (2+col2_apothem)**2
+                col2_apothem = min_2
+                pixels = (col2_apothem)**2
                 hs2_btm_30 = hs2_btm_25 = hs2_btm_20 = pixels-3 if pixels <= 200 else 200
                 (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])                
                 # Toggle Initialize the session state for content visibility
@@ -797,37 +811,37 @@ def Real_world():
                     # countour line of culmulative
                     show_cmlt_contour2 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour2')     
                     cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml2')                 
-                    col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 50, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 50, int(df2_y),key ='2y')
+                    col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 49, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 49, int(df2_y),key ='2y')
                     min_2=np.int32(np.min([df2_x, 50-df2_x,df2_y,50-df2_y]))
-                    col2_apothem = st.slider('Enter a number for apothem', 0, min_2-1, min_2-1,key ='2dmt')           
+                    col2_apothem = st.slider('Enter a number for apothem', 0, min_2, min_2,key ='2dmt')           
                     pixels = (col1_apothem)**2
                     hs1_btm_30 = hs1_btm_25 = hs1_btm_20 = pixels if pixels <= 200 else 200
                     (top2,btm2) = ([0,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30],[1,1,1,1,hs2_btm_20,hs2_btm_25,hs2_btm_30])
                 else:
                     st.write("Click the button to show it.")                
-            submitted = st.form_submit_button("Generate and compare!")              
-    
-        if submitted:
-    
+            submitted = st.form_submit_button("Generate and compare!")
+            
+        figSet = []
+        if submitted:          
             col1_, col2_ = st.columns(2)
             with col1_:
                 contours_dfs = pd.DataFrame()
                 contours_cmltv_dfs = pd.DataFrame()
                 df=df1
                 (x_start,x_end,y_start,y_end) = (col1_center_x-col1_apothem,col1_center_x+col1_apothem,col1_center_y-col1_apothem,col1_center_y+col1_apothem)
-                for i in range(1,7,1):
+                for i in range(1,7,1):#7
                     mtx = df.iloc[i*50:(i+1)*50,0:50]
-                    mtx = mtx.iloc[(x_start-1):x_end,(y_start-1):y_end] 
+                    mtx = mtx.iloc[(x_start):x_end,(y_start):y_end] 
                 
                     if (i == 0) or (i == 1):
-                        mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start+1, y_end-y_start+1)))
-                        mtx_pre.columns = range(y_start-1,y_end)
-                        mtx_pre.index=range(x_start-1,x_end)
+                        mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
+                        mtx_pre.columns = range(y_start,y_end)
+                        mtx_pre.index=range(x_start,x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
-                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv,fig) = plotStream(
                             mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,signalCutoff=signalCutoff,RBF_function=RBF_function1,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
-                            x_unit = (x_end-x_start+1),y_unit = (y_end-y_start+1),
+                            x_unit = (x_end-x_start),y_unit = (y_end-y_start),
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN1,density=density1,
                             show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,
@@ -846,12 +860,12 @@ def Real_world():
                         #mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50] 
                         # 5 mins interval
                         mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50] 
-                        mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]
+                        mtx_pre = mtx_pre.iloc[(x_start):x_end,(y_start):y_end]
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
-                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv,fig) = plotStream(
                             mtx=mtx,top=top1[i],btm=btm1[i],previous = mtx_pre,signalCutoff=signalCutoff,RBF_function=RBF_function1,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
-                            x_unit = (x_end-x_start+1),y_unit = (y_end-y_start+1),
+                            x_unit = (x_end-x_start),y_unit = (y_end-y_start),
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN1,density=density1,
                             show_contour=show_cmlt_contour1,show_cmlt_contour=show_cmlt_contour1,    
@@ -864,7 +878,8 @@ def Real_world():
                             framelinewidth=framelinewidth,
                             fontname=fontname
                         )
-                    
+                    figSet.append(fig)
+                    #st.download_button("Download PDF "+timeline[i], data=buffer, file_name=timeline[i]+"_figure.pdf", mime="application/pdf")
                     
                     mtx = mtx.reset_index(drop=True)
                     mtx_pre = mtx_pre.reset_index(drop=True)
@@ -876,8 +891,7 @@ def Real_world():
                     
                     ### Derivative index
                     drvt1_index_x_sets.append(np.sum([np.abs(i) for i in np.array(x_drvtv[0:col1_apothem]) - np.array(x_drvtv[-col1_apothem:][::-1])])) 
-                    drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col1_apothem]) - np.array(y_drvtv[-col1_apothem:][::-1])])) 
-    
+                    drvt1_index_y_sets.append(np.sum([np.abs(i) for i in np.array(y_drvtv[0:col1_apothem]) - np.array(y_drvtv[-col1_apothem:][::-1])]))  
     
                     ### contour line export
                     if contours:
@@ -890,32 +904,31 @@ def Real_world():
                         contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
     
                     ### calculate 
-                    inequ,CWSNR=calculate_index(mtx_delta,col1_apothem*2+1,col1_apothem*2+1)
+                    inequ,CWSNR=calculate_index(mtx_delta,col1_apothem*2,col1_apothem*2)
                     col1_inequ_set.append(inequ)
                     col1_CWSNR_set.append(CWSNR) 
                 
                 st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
                 st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
-                  
-                    
+                                 
             with col2_:      
                 contours_dfs = pd.DataFrame()
                 contours_cmltv_dfs = pd.DataFrame()            
                 df=df2
                 (x_start,x_end,y_start,y_end) = (col2_center_x-col2_apothem,col2_center_x+col2_apothem,col2_center_y-col2_apothem,col2_center_y+col2_apothem)
-                for i in range(1,7,1):
+                for i in range(1,7,1):#7
                     mtx = df.iloc[i*50:(i+1)*50,0:50]
-                    mtx = mtx.iloc[(x_start-1):x_end,(y_start-1):y_end] 
+                    mtx = mtx.iloc[(x_start):x_end,(y_start):y_end] 
             
                     if (i == 0) or (i == 1):
-                        mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start+1, y_end-y_start+1)))
-                        mtx_pre.columns = range(y_start-1,y_end)
-                        mtx_pre.index=range(x_start-1,x_end)
+                        mtx_pre = pd.DataFrame(np.zeros(shape=(x_end-x_start, y_end-y_start)))
+                        mtx_pre.columns = range(y_start,y_end)
+                        mtx_pre.index=range(x_start,x_end)
                         (X,Y,Z)=plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
-                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv,fig) = plotStream(
                             mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,signalCutoff=signalCutoff,RBF_function=RBF_function2,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
-                            x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
+                            x_unit = x_end-x_start,y_unit = y_end-y_start,
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN2,density=density2,
                             show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2,    
@@ -927,19 +940,18 @@ def Real_world():
                             labelweight=labelweight,
                             framelinewidth=framelinewidth,
                             fontname=fontname
-                        )
-            
+                        )          
                     else:
                         ## 10 mins interval
                         #mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50] 
                         # 5 mins interval
                         mtx_pre = df.iloc[(i-1)*50:(i)*50,0:50]    
-                        mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]
+                        mtx_pre = mtx_pre.iloc[(x_start):x_end,(y_start):y_end]
                         (X,Y,Z) = plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff)
-                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv,fig) = plotStream(
                             mtx=mtx,top=top2[i],btm=btm2[i],previous = mtx_pre,signalCutoff=signalCutoff,RBF_function=RBF_function2,
                             colorLevels=np.linspace(colorLevelsSet[0],colorLevelsSet[1],7),
-                            x_unit = x_end-x_start+1,y_unit = y_end-y_start+1,
+                            x_unit = x_end-x_start,y_unit = y_end-y_start,
                             cmlt_contour_color=cmlt_contour_color[i],
                             densityYN=densityYN2,density=density2,
                             show_contour=show_cmlt_contour2,show_cmlt_contour=show_cmlt_contour2, 
@@ -952,10 +964,11 @@ def Real_world():
                             framelinewidth=framelinewidth,
                             fontname=fontname                           
                         )
-                    
+                    #st.download_button("Download PDF "+timeline[i], data=buffer, file_name=timeline[i]+"_figure.pdf", mime="application/pdf")
+                    figSet.append(fig)
                     mtx = mtx.reset_index(drop=True)
                     mtx_pre = mtx_pre.reset_index(drop=True)
-                    mtx_delta=mtx-mtx_pre
+                    mtx_delta = mtx-mtx_pre
                     mtx_delta = pd.DataFrame(np.where(mtx_delta<0,0,mtx_delta))
                     # signal cutoff
                     mtx[mtx<signalCutoff]=0.0
@@ -976,18 +989,25 @@ def Real_world():
                         contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                
      
                     ### calculate 
-                    inequ,CWSNR=calculate_index(mtx_delta,col1_apothem*2+1,col1_apothem*2+1)
+                    inequ,CWSNR=calculate_index(mtx_delta,col1_apothem*2,col1_apothem*2)
                     col2_inequ_set.append(inequ)
                     col2_CWSNR_set.append(CWSNR) 
                     
                 st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
                 st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
+
         ### zip files and download ###         
         #create_zip()             
         ## Provide download link
         #with open("figures.zip", "rb") as f:
         #    st.download_button("Download Figures", f.read(), file_name="figures.zip")
-                   
+        
+        # https://discuss.streamlit.io/t/create-download-file-upon-clicking-a-button/32613
+        placeholder = st.empty()      
+        # show download button on top
+        with placeholder:
+            st.download_button(label='Download plots', data=figs2zip(figSet), file_name='plots.zip')    
+
     step2 = st.checkbox('Step 2: show the measurement of the dissymmetry and diffusion of cumulative signals using Signal Inequality Index (SII) and Signal Coverage Index (SCI)',value=True)
     if step2:
         _start = 0
@@ -1012,13 +1032,14 @@ def Real_world():
             table_CWSNR.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']            
             table_cmb = pd.merge(table_inequ,table_CWSNR,right_index=True,left_index= True)
             st.write(table_cmb)
-            st.markdown(get_table_download_link(table_cmb, fileName = "SII_SCI_metrics"), unsafe_allow_html=True)
-                    
+            st.markdown(get_table_download_link(table_cmb, fileName = "SII_SCI_metrics"), unsafe_allow_html=True)                    
         except:
             st.write("")
+            
 
-
-
+########################
+### upload data page ###
+########################
 @st.cache_data(max_entries=1,persist="disk")
 def get_example(filename=''):
     df = pd.read_csv(r'./'+filename, header=None,sep="\t")
@@ -1035,14 +1056,12 @@ def upload():
 
     ###################
     ### data upload ###
-    ###################
-    
+    ###################  
     st.markdown("## Data Upload")
     # Upload the dataset and save as csv
     st.markdown("### Upload a csv file for analysis.") 
     st.write("\n")
-
-            
+        
     # Code to read a single file 
     uploaded_file = st.file_uploader("Choose a file", type = ['csv', 'xlsx', 'txt'])
     data = pd.DataFrame()
@@ -1065,12 +1084,16 @@ def upload():
     st.session_state['data'] = pd.DataFrame() if 'data' not in st.session_state.keys() else st.session_state['data']
     ''' Load the data and save the columns with categories as a dataframe. 
     This section also allows changes in the numerical and categorical columns. '''
-    
-    if st.button("Load Data") or st.session_state['data'].shape[0]>0:   
+
+
+    dataMaxVal = 5000      
+    if st.session_state['data'].shape[0]>0:
+        dataMaxVal = st.session_state['data'].max().max()
+    if st.button("Load Data") or st.session_state['data'].shape[0]>0:
+        
         if data.shape[0]>0:
             # Raw data 
             st.dataframe(data)
-
             # Adding a horizontal line
             st.markdown("---")
             st.markdown("## Generate S2MAP")
@@ -1079,9 +1102,9 @@ def upload():
             cmlt_contour_color = generate_colors(t_time)
             col,colhide = st.columns([6,1])
             # signal noise cutoff
-            signalCutoff_ = st.slider('Enter signal noise cutoff',1, 4999, 0,key ='signalCutoff_')    #                            
+            signalCutoff_ = st.slider('Enter signal noise cutoff',1, np.int64(dataMaxVal)-1, 0,key ='signalCutoff_')    #                            
             # colorLevels
-            colorLevels_ = st.slider('Select a range of values for coloring',min_value=signalCutoff_,max_value=5000,value=(signalCutoff_,5000),key ='colorLevels_')            
+            colorLevels_ = st.slider('Select a range of values for coloring',min_value=signalCutoff_,max_value=np.int64(dataMaxVal),value=(signalCutoff_,np.int64(dataMaxVal)),key ='colorLevels_')            
             with st.form("form_"):
                 with col:
                     df = st.session_state['data']
@@ -1116,13 +1139,13 @@ def upload():
                     ### parameters ###
                     # center coordinate
                     RBF_function_ = 'linear'
-                    df_x = np.int32(df.shape[1]/2)
-                    df_y = np.int32(df.shape[1]/2)     
+                    df_x = np.float64(df.shape[1]/2)
+                    df_y = np.float64(df.shape[1]/2)    
                     hs_set = list(np.repeat(1,t_time))
                     densityYN,density,show_contour,show_cmlt_contour,cntrlinecml=False,1,False,False,1200.0
                     col_center_x,col_center_y=np.int32(df_x),np.int32(df_y)
                     min_=np.int32(np.min([col_center_x, df.shape[1]-col_center_x,col_center_y,df.shape[1]-col_center_y]))
-                    col_apothem = min_-1
+                    col_apothem = min_
                     pixels = (col_apothem)**2
                     hs_btm_set=[]
                     for t_idx in range(0,t_time,1):
@@ -1136,8 +1159,7 @@ def upload():
                     if st.button('Show/Hide advanced parameters',key='data_toggle'):
                         st.session_state.show_data_para = not st.session_state.show_data_para
                     # Display content based on the session state
-                    if st.session_state.show_data_para:  
-                        
+                    if st.session_state.show_data_para:                   
                         ### parameters ###
                         # interpolate function
                         RBF_function_ = st.selectbox('Select an option for interpolation function', ['gaussian','cubic','quintic','multiquadric','thin_plate','inverse','linear'],key='RBF_function_')   
@@ -1156,11 +1178,11 @@ def upload():
                         
                         # countour line of cumulative
                         show_cmlt_contour = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour')
-                        cntrlinecml = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml')
-                        col_center_x,col_center_y = st.slider('center x coordinate', 0, df.shape[1], np.int32(df_x),key ='1x'),st.slider('center y coordinate', 0, df.shape[1], np.int32(df_y),key ='1y')
+                        cntrlinecml = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=np.float64(dataMaxVal), value=np.float64(dataMaxVal)/5, step=np.float64(dataMaxVal)/500,key ='cntrlinecml')
+                        col_center_x,col_center_y = st.slider('center x coordinate', 0, df.shape[1]-1, np.int32(df_x),key ='1x'),st.slider('center y coordinate', 0, df.shape[1]-1, np.int32(df_y),key ='1y')
                         min_=np.int32(np.min([col_center_x, df.shape[1]-col_center_x,col_center_y,df.shape[1]-col_center_y]))
                         # apothem 
-                        col_apothem = st.slider('Enter a number for apothem', 0, min_-1, min_-1,key ='dmt')          
+                        col_apothem = st.slider('Enter a number for apothem', 0, min_, min_,key ='dmt')          
                         pixels = (col_apothem)**2       
                         hs_btm_set = []
                         for t_idx in range(0,t_time,1):
@@ -1180,18 +1202,18 @@ def upload():
                 for t in range(0,t_time,1):
                     #st.write(t)
                     mtx = df.iloc[t*rangeVal:(t+1)*rangeVal,0:rangeVal]
-                    mtx = mtx.iloc[(x_start-1):x_end,(y_start-1):y_end]       
+                    mtx = mtx.iloc[(x_start):(y_end),(y_start):(y_end)]       
                     if (t == 0) or (t == 1): 
                         #st.write('Yes')
                         mtx_pre = pd.DataFrame(np.zeros(shape=(col_apothem*2+1, col_apothem*2+1)))
-                        mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]  
-                        mtx_pre.columns = range((y_start-1),y_end)
-                        mtx_pre.index = range((x_start-1),x_end)
-                        (X,Y,Z)=plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff_)
-                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                        mtx_pre = mtx_pre.iloc[(x_start):(x_end),(y_start):(y_end)]  
+                        mtx_pre.columns = range((y_start),y_end)
+                        mtx_pre.index = range((x_start),x_end)
+                        (X,Y,Z)=plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff_,z_max=np.int64(dataMaxVal))
+                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv,fig) = plotStream(
                             mtx=mtx,top=top[t],btm=btm[t],previous = mtx_pre,signalCutoff=signalCutoff_,RBF_function=RBF_function_,
                             colorLevels=np.linspace(colorLevels_[0],colorLevels_[1],7),
-                            x_unit = (x_end-x_start+1), y_unit = (y_end-y_start+1),
+                            x_unit = (x_end-x_start), y_unit = (y_end-y_start),
                             cmlt_contour_color=cmlt_contour_color[t],
                             densityYN=densityYN,density=density,
                             show_contour=show_cmlt_contour,show_cmlt_contour=show_cmlt_contour,
@@ -1210,12 +1232,12 @@ def upload():
                         #mtx_pre = df.iloc[(i-2)*50:(i-1)*50,0:50] 
                         # 5 mins interval          
                         mtx_pre = df.iloc[(t-1)*rangeVal:(t)*rangeVal,0:rangeVal]    
-                        mtx_pre = mtx_pre.iloc[(x_start-1):x_end,(y_start-1):y_end]                  
-                        (X,Y,Z) = plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff_)
-                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv) = plotStream(
+                        mtx_pre = mtx_pre.iloc[(x_start):(x_end),(y_start):(y_end)]                  
+                        (X,Y,Z) = plot_3D(mtx,previous = mtx_pre,signalCutoff=signalCutoff_,z_max=np.int64(dataMaxVal))
+                        (x_inequ,y_inequ,x_drvtv,y_drvtv,contours,contours_cmltv,fig) = plotStream(
                             mtx=mtx,top=top[t],btm=btm[t],previous = mtx_pre,signalCutoff=signalCutoff_,RBF_function=RBF_function_,
                             colorLevels=np.linspace(colorLevels_[0],colorLevels_[1],7),
-                            x_unit = (x_end-x_start+1), y_unit = (y_end-y_start+1),
+                            x_unit = (x_end-x_start), y_unit = (y_end-y_start),
                             cmlt_contour_color=cmlt_contour_color[t],
                             densityYN=densityYN,density=density,
                             show_contour=show_cmlt_contour,show_cmlt_contour=show_cmlt_contour, 
@@ -1250,7 +1272,7 @@ def upload():
                         contours_cmltv_df['time'] = ''#timeline[i]
                         contours_cmltv_dfs = pd.concat([contours_cmltv_dfs,contours_cmltv_df])                   
                     ### calculate 
-                    inequ,CWSNR=calculate_index(mtx_delta,col_apothem*2+1,col_apothem*2+1)
+                    inequ,CWSNR=calculate_index(mtx_delta,col_apothem*2,col_apothem*2)
                     col_inequ_set.append(inequ)
                     col_CWSNR_set.append(CWSNR)   
                     st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
