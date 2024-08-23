@@ -186,7 +186,7 @@ def plot_3D(mtx, z_max=5000,signalCutoff=0,**kwargs):
     if azim is not None:
         ax.azim = azim
     if dist is not None:
-        ax.dist = dist
+        ax.zoom = dist
     if elev is not None:
         ax.elev = elev
     ax.set_xlabel('x-axis')
@@ -225,7 +225,7 @@ def plot_3D(mtx, z_max=5000,signalCutoff=0,**kwargs):
     if azim is not None:
         ax2.azim = azim
     if dist is not None:
-        ax2.dist = dist
+        ax2.zoom = dist
     if elev is not None:
         ax2.elev = elev
     # Hide grid lines
@@ -445,6 +445,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     # Set the maximum number of ticks on the x-axis
     max_ticks = 3
     import matplotlib.ticker as ticker
+            
     ax1.plot(np.arange(0,x_unit,1),(np.arange(0,x_unit,1)-np.arange(0,x_unit,1)),color='Black',linewidth=linewidth)      #ax1.plot(np.arange(0,1,1/x_unit),(np.arange(0,1,1/x_unit)-np.arange(0,1,1/x_unit)),color='Black',linewidth=linewidth)  
     ax1.plot(np.arange(0,x_unit,1),x_drvtv,linewidth=linewidth)
     ax1.xaxis.set_visible(False)
@@ -459,10 +460,12 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     # Optionally, you can format the tick labels if needed
     # Get current ticks
     ax1_x_ticks = ax1.get_xticks().tolist()
+    ax1_y_ticks = ax1.get_yticks().tolist()
     # Set the tick positions using FixedLocator
     ax1.xaxis.set_major_locator(ticker.FixedLocator(ax1_x_ticks))
-    ax1.set_xticklabels(["{}".format(int(tick*100)) for tick in ax1.get_xticks().tolist()], rotation=0, weight=labelweight)
-    ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1.get_yticks().tolist()])   
+    ax1.yaxis.set_major_locator(ticker.FixedLocator(ax1_y_ticks))
+    ax1.set_xticklabels(["{}".format(int(tick*100)) for tick in ax1_x_ticks], rotation=0, weight=labelweight)
+    ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1_y_ticks])   
 
     
     ax2.plot(np.arange(0,y_unit,1)-np.arange(0,y_unit,1),np.arange(0,y_unit,1),color='Black',linewidth=linewidth)
@@ -479,10 +482,12 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     # Set tick label font weight
     # Optionally, you can format the tick labels if needed
     ax2_x_ticks = ax2.get_xticks().tolist()
+    ax2_y_ticks = ax2.get_yticks().tolist()
     # Set the tick positions using FixedLocator
-    ax2.xaxis.set_major_locator(ticker.FixedLocator(ax2_x_ticks))    
-    ax2.set_xticklabels(["{}".format(int(tick*100)) for tick in ax2.get_xticks().tolist()], rotation=0, weight=labelweight)   
-    ax2.set_yticklabels(["{}".format(int(tick*100)) for tick in ax2.get_yticks().tolist()])
+    ax2.xaxis.set_major_locator(ticker.FixedLocator(ax2_x_ticks))
+    ax2.yaxis.set_major_locator(ticker.FixedLocator(ax2_y_ticks))
+    ax2.set_xticklabels(["{}".format(int(tick*100)) for tick in ax2_x_ticks], rotation=0, weight=labelweight)   
+    ax2.set_yticklabels(["{}".format(int(tick*100)) for tick in ax2_y_ticks])
     
     for axis in ['top', 'bottom', 'left', 'right']:
         ax.spines[axis].set_linewidth(framelinewidth)  # change width
