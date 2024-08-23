@@ -239,6 +239,7 @@ def plot_3D(mtx, z_max=5000,signalCutoff=0,**kwargs):
     ax2.invert_xaxis()
     #plt.show()
     st.pyplot(fig)
+    plt.close()
     return(X,Y,Z)
 
 def plot_inequality(mtx,**kwargs):
@@ -334,7 +335,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     fontname = kwargs['fontname'] if 'fontname' in kwargs.keys() else 'Arial'
     
     # -- Plot --------------------------
-    # Set the font family for all text elements
+    ### Set the font family for all text elements
     plt.rcParams['font.family'] = fontname    
     fig = plt.figure(figsize=(10, 10))
     #ax = fig.add_subplot(111)
@@ -346,63 +347,76 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     mtx[mtx<signalCutoff]=0
     mtx_pre[mtx_pre<signalCutoff]=0
 
-    
     ### delta changes ###
     Z = np.array(mtx.reset_index(drop=True).subtract(mtx_pre.reset_index(drop=True)))[:,::-1]     
-    Z_cmltv = np.array(mtx.reset_index(drop=True))[:,::-1]
-    Z_cmltv[Z_cmltv<signalCutoff] = 0
-    
     ### Interpolate these onto a regular grid ###
     xi,yi = np.meshgrid(np.arange(0,lx,1),np.arange(0,ly,1)) # Set up a mesh of positions
-    
     ### flatten the observation matrix ###
-    xpos,ypos,z,z_cmltv = xi.flatten(),yi.flatten(),Z.flatten(),Z_cmltv.flatten() # Convert positions to 1D array
+    xpos,ypos,z = xi.flatten(),yi.flatten(),Z.flatten() # Convert positions to 1D array
 
-    ### get_mask ###
-    (mask,mask_top,mask_btm) = GET_MASK(z=z,top=top,btm=btm)
-    (mask_cmltv,mask_top_cmltv,mask_btm_cmltv) = GET_MASK(z=z_cmltv,top=top,btm=btm)
+    ### interpolation options ###
+    #'multiquadric': sqrt((r/self.epsilon)**2 + 1)
+    #'inverse': 1.0/sqrt((r/self.epsilon)**2 + 1)
+    #'gaussian': exp(-(r/self.epsilon)**2)
+    #'linear': r
+    #'cubic': r**3
+    #'quintic': r**5
+    #'thin_plate': r**2 * log(r)
+    func = Rbf(xpos,ypos, z, function=RBF_function)#func = Rbf(xpos[mask],ypos[mask], z[mask], function=RBF_function)  
+    zi = func(xi, yi) 
+     
+    ### layer 1: signal delta change color layer ###  
+    try:
+        ax.contourf(xi, yi, zi, 
+                    levels=list(colorLevels),cmap=newcmp,#list(np.linspace(500,5000,7)),linewidths=2,
+                    #cmap="jet2",
+                    linestyles='dashed')
+    except:
+        print("not available for signal delta change")
 
-    func = Rbf(xpos,ypos, z, function=RBF_function)#func = Rbf(xpos[mask],ypos[mask], z[mask], function=RBF_function)
-    func_cmltv = Rbf(xpos,ypos, z_cmltv, function=RBF_function)#func_cmltv = Rbf(xpos[mask_cmltv],ypos[mask_cmltv], z_cmltv[mask_cmltv], function=RBF_function)
-    zi_cmltv,zi = func_cmltv(xi, yi),func(xi, yi) 
-    
-    # get the positions of the masked cumulative expression
-    shape = (lx,ly)
-    mask_top_cmltv_pd = pd.DataFrame(mask_top_cmltv.reshape(shape))
-    mask_top_cmltv_pd_pstn = np.where(mask_top_cmltv_pd == True)
-    
-    ### Plot flowlines cmltv arrow plot ###
+    ### layer 2: Plot stream-plot for signal delta change ###
     if densityYN == True:
         if top != 0:
-            dy, dx = np.gradient(-zi_cmltv) # Flow goes down gradient (thus -zi)
+
+            ### get_mask ###
+            shape = (lx,ly)
+            (mask,mask_top,mask_btm) = GET_MASK(z=z,top=top,btm=btm)
+            mask_top_pd = pd.DataFrame(mask_top.reshape(shape))
+            mask_top_pd_pstn = np.where(mask_top_pd == True)
+            # Flow goes down gradient (thus -zi)
+            dy, dx = np.gradient(-zi) 
             stream = ax.streamplot(xi[0,:], yi[:,0], dx, dy, density=1,arrowsize=1,linewidth=3,minlength=0.011,
                                color = 'grey',#broken_streamlines=True,
-                               start_points=np.column_stack((mask_top_cmltv_pd_pstn[1],mask_top_cmltv_pd_pstn[0]))
+                               start_points=np.column_stack((mask_top_pd[1],mask_top_pd_pstn[0]))
                               )#color='0.6',
             # Customize the transparency level
             stream.lines.set_alpha(0.5)
-   
-    ### Contour gridded head observations ###
-    contours =[]
-    try: # plot contour line of the delta
-        ax.contourf(xi, yi, zi, 
-                          linewidths=2,levels=list(colorLevels),cmap=newcmp,#list(np.linspace(500,5000,7))
-                            #cmap="jet2",
-                          linestyles='dashed')  
-        if show_cmlt_contour == True:
+    
+    ### layer 3: Plot contour lines for signal delta change and cumulative signal ###
+    contours =[]       
+    if show_contour == True:
+        try:
             contours = ax.contour(xi, yi, zi, 
                               linewidths=2,levels=list(colorLevels),cmap=newcmp,#list(np.linspace(500,5000,7))
                               linestyles='dashed')
-            ax.clabel(contours)
-    except:
-        print("not available")          
+            ax.clabel(contours,inline=True, fontsize=12) 
+        except:
+            print("not available for signal delta change contour line")               
+    
     contours_cmltv = []
-    if show_contour == True:
+    if show_cmlt_contour == True:
         try:
+            ### for cumulative signal ###
+            Z_cmltv = np.array(mtx.reset_index(drop=True))[:,::-1]
+            Z_cmltv[Z_cmltv<signalCutoff] = 0
+            z_cmltv = Z_cmltv.flatten()
+            ### interpolation ###
+            func_cmltv = Rbf(xpos, ypos, z_cmltv, function=RBF_function)#func_cmltv = Rbf(xpos[mask_cmltv],ypos[mask_cmltv], z_cmltv[mask_cmltv], function=RBF_function)
+            zi_cmltv = func_cmltv(xi, yi)
             contours_cmltv = ax.contour(xi, yi, zi_cmltv, [cntrlinecml], colors = cmlt_contour_color,alpha=0.5,linewidths=4) #
             ax.clabel(contours_cmltv,inline=True, fontsize=12)
         except:
-            print("not available")     
+            print("not available for cumulative contour line")     
 
     ####################
     ##### color ######
@@ -444,12 +458,12 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     # Set tick label font weight
     # Optionally, you can format the tick labels if needed
     # Get current ticks
-    ticks = ax1.get_xticks()
+    ax1_x_ticks = ax1.get_xticks().tolist()
     # Set the tick positions using FixedLocator
-    ax1.xaxis.set_major_locator(ticker.FixedLocator(ticks))
-    ax1.set_yticklabels(ax1.get_yticks(), rotation=0, weight=labelweight)    
-    ax1.set_xticklabels(["{}".format(int(tick*100)) for tick in ax1.get_xticks()])
-    ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1.get_yticks()])   
+    ax1.xaxis.set_major_locator(ticker.FixedLocator(ax1_x_ticks))
+    ax1.set_xticklabels(["{}".format(int(tick*100)) for tick in ax1.get_xticks().tolist()], rotation=0, weight=labelweight)
+    ax1.set_yticklabels(["{}".format(int(tick*100)) for tick in ax1.get_yticks().tolist()])   
+
     
     ax2.plot(np.arange(0,y_unit,1)-np.arange(0,y_unit,1),np.arange(0,y_unit,1),color='Black',linewidth=linewidth)
     ax2.plot(y_drvtv,np.arange(0,y_unit,1),linewidth=linewidth)
@@ -464,9 +478,11 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
    
     # Set tick label font weight
     # Optionally, you can format the tick labels if needed
-    ax2.set_xticklabels(ax2.get_xticks(), rotation=0, weight=labelweight)
-    ax2.set_xticklabels(["{}".format(int(tick*100)) for tick in ax2.get_xticks()])   
-    ax2.set_yticklabels(["{}".format(int(tick*100)) for tick in ax2.get_yticks()])
+    ax2_x_ticks = ax2.get_xticks().tolist()
+    # Set the tick positions using FixedLocator
+    ax2.xaxis.set_major_locator(ticker.FixedLocator(ax2_x_ticks))    
+    ax2.set_xticklabels(["{}".format(int(tick*100)) for tick in ax2.get_xticks().tolist()], rotation=0, weight=labelweight)   
+    ax2.set_yticklabels(["{}".format(int(tick*100)) for tick in ax2.get_yticks().tolist()])
     
     for axis in ['top', 'bottom', 'left', 'right']:
         ax.spines[axis].set_linewidth(framelinewidth)  # change width
@@ -479,7 +495,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     #plt.show()
     #st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot(fig)
-       
+    plt.close()
     #### save figure buffer ###
     #buffer = io.BytesIO()
     #plt.savefig(buffer, format='pdf')
