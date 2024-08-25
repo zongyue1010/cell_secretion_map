@@ -367,8 +367,10 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
      
     ### layer 1: signal delta change color layer ###  
     try:
+        colorLevelsList=list(colorLevels)
+        #colorLevelsList.append(10000)
         ax.contourf(xi, yi, zi, 
-                    levels=list(colorLevels),cmap=newcmp,#list(np.linspace(500,5000,7)),linewidths=2,
+                    levels=colorLevelsList,cmap=newcmp,#list(np.linspace(500,5000,7)),linewidths=2,
                     #cmap="jet2",
                     linestyles='dashed')
     except:
@@ -592,19 +594,20 @@ def calculate_index(mtx,x_unit,y_unit):
     coverageIndex = np.sqrt(generate_coverageIndex(x_drvtv)**2+generate_coverageIndex(y_drvtv)**2)
     return(inequ,coverageIndex)
 
-def plot_time(IL6_21_IDI=[],IL6_15_IDI=[],xlabel = "",ylabel="",selected_option1='',selected_option2=''):
+def plot_time(IL6_21_IDI=[],IL6_15_IDI=[],size=18,xlabel = "",ylabel="",selected_option1='',selected_option2=''):
     fig = plt.figure(figsize=(5, 5))
     ax = fig.add_subplot(111)
     ax.plot(range(0,len(IL6_21_IDI),1),IL6_21_IDI,color='red',label=selected_option1)#np.repeat(0,len(IDI))
     ax.plot(range(0,len(IL6_15_IDI),1),IL6_15_IDI,color='blue',label=selected_option2)#np.repeat(0,len(IDI))
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel, fontsize=size)
+    ax.set_ylabel(ylabel, fontsize=size)
     #ax.set_ylim(0,2.5)
     fig.show() 
     ax.set_xticks([0,1,2,3,4,5])
-    ax.set_xticklabels(['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins'])  
-    plt.legend(loc="upper right",title='cell type')
-
+    ax.set_xticklabels(['5','10','15','20','25','30'])  
+    plt.legend(loc="upper right",title='cell type',fontsize=size-1,title_fontsize=size)
+    # Adjust x-axis and y-axis tick size
+    plt.tick_params(axis='both', which='major', labelsize=size)  # Change the tick size
     # Adjust the figure size
     fig.set_figwidth(5)  # Set the width in inches
     fig.set_figheight(5)  # Set the height in inches
@@ -619,7 +622,7 @@ def generate_colors(n):
 ####################################################
 ### load the object and generate the coordincate ###
 ####################################################
-@st.cache_data(max_entries=1,persist="disk") #ttl=60,
+#@st.cache_data(max_entries=1,persist="disk") #ttl=60,
 def LOAD_DATA(inputDir='',dataDir='',sheet_name=''):
     df = pd.read_excel(r'./'+inputDir+dataDir, sheet_name=sheet_name,header=None)
     return df
@@ -672,15 +675,15 @@ def Real_world():
     ####################
     col1, col2 = st.columns(2)
     timeline=['0 mins','5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']
-    
+    max_height = 5000
     if step1:
         ##########################################
         ### general parameters for the figures ###
         ##########################################
         # signal noise cutoff
-        signalCutoff = st.slider('Enter signal noise cutoff',1, 5000-1, 0,key ='signalCutoff')    #        
+        signalCutoff = st.slider('Enter signal noise cutoff',1, max_height-1, 0,key ='signalCutoff')    #        
         # colorLevels
-        colorLevelsSet = st.slider('Select a range of values for coloring',min_value=signalCutoff,max_value=5000,value=(signalCutoff, 5000),key ='colorLevelsSet')
+        colorLevelsSet = st.slider('Select a range of values for coloring',min_value=signalCutoff,max_value=max_height,value=(signalCutoff, max_height),key ='colorLevelsSet')
 
         ### parameters for figure ###
         dpi_value,linewidth,framelinewidth,fontname,tick_labelsize,labelweight=500.0,10,10,fontnames[0],20,'bold'
@@ -767,7 +770,7 @@ def Real_world():
                     
                     # countour line of cumulative
                     show_cmlt_contour1 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour1')
-                    cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml1')                  
+                    cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=max_height, value=1200.0, step=50.0,key ='cntrlinecml1')                  
                     col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 49, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 49, int(df1_y),key ='1y') 
                     min_1=np.int32(np.min([df1_x, 50-df1_x,df1_y,50-df1_y]))
                     # apothem
@@ -831,7 +834,7 @@ def Real_world():
                     show_contour2 = st.checkbox('Show signal contour line',value=False,key ='show_contour2')            
                     # countour line of culmulative
                     show_cmlt_contour2 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour2')     
-                    cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=5000.0, value=1200.0, step=50.0,key ='cntrlinecml2')                 
+                    cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=max_height, value=1200.0, step=50.0,key ='cntrlinecml2')                 
                     col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 49, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 49, int(df2_y),key ='2y')
                     min_2=np.int32(np.min([df2_x, 50-df2_x,df2_y,50-df2_y]))
                     col2_apothem = st.slider('Enter a number for apothem', 0, min_2, min_2,key ='2dmt')           
@@ -1036,10 +1039,10 @@ def Real_world():
         col1__, col2__ = st.columns(2)
         with col1__:
             #plot_time(IL6_21_IDI=DII1,IL6_15_IDI=DII2,xlabel='time',ylabel="DII")
-            plot_time(IL6_21_IDI=col1_inequ_set,IL6_15_IDI=col2_inequ_set,xlabel='time',ylabel="SII",
+            plot_time(IL6_21_IDI=col1_inequ_set,IL6_15_IDI=col2_inequ_set,xlabel='time (minute)',ylabel="SII",
                       selected_option1=selected_option1,selected_option2=selected_option2)
         with col2__:
-            plot_time(IL6_21_IDI=col1_CWSNR_set,IL6_15_IDI=col2_CWSNR_set,xlabel='time',ylabel="SCI",
+            plot_time(IL6_21_IDI=col1_CWSNR_set,IL6_15_IDI=col2_CWSNR_set,xlabel='time (minute)',ylabel="SCI",
                      selected_option1=selected_option1,selected_option2=selected_option2)
           
         #table=pd.DataFrame({selected_option1:DII1,selected_option2:DII2})
