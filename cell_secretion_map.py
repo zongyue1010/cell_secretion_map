@@ -13,8 +13,13 @@ def add_logo(logo_path, width, height):
     modified_logo = logo.resize((width, height))
     return modified_logo
 
-st.image(add_logo(logo_path="./aipharm_logo.png", width=400, height=100)) 
-st.title('An online interactive analytical platform for cell secretion map')
+st.image(add_logo(logo_path="./aipharm_logo.png", width=300, height=70)) 
+# Create columns for the title and the graph
+col1, col2 = st.columns([1, 3]) 
+with col1:
+    st.image(add_logo(logo_path="./S2Map_logo.png", width=150, height=150)) 
+with col2:    
+    st.title('An online interactive analytical platform for cell secretion map')
 st.header("Comparison of the cell secretion signals")
 
 
@@ -719,8 +724,6 @@ def Real_world():
                 col1_CWSNR_set=[]
                 ### IL6 sheet 21 anisotropy
                 # List of options for the select box
-                #sheet_names1 = ['Sheet21-15max', 'Sheet20','Sheet19','Sheet18','Sheet17-15max','Sheet16','Sheet11','Sheet10-180c','Sheet9-180c',
-                 #              'Sheet8-15max','Sheet7-15 max','Sheet6-depends','Sheet5-depends','Sheet3','Sheet2','Sheet1']
                 ### load data ###
                 sheet_names1 = sheet_names 
                 selected_option1 = st.selectbox('Select an option', sheet_names1,key='sheet_names1')             
@@ -787,8 +790,11 @@ def Real_world():
                 col2_inequ_set=[]
                 col2_CWSNR_set=[]
                 ### IL6 sheet 15 anisotropy
-                # List of options for the select box
-                sheet_names2 = sheet_names
+                # List of options for the select box            
+                try:
+                     sheet_names2 = list(set(sheet_names)-set([selected_option1]))
+                except:
+                    sheet_names2 = sheet_names
                 selected_option2 = st.selectbox('Select an option', sheet_names2,key='sheet_names2')
                 df2 = LOAD_DATA(inputDir=inputDir,dataDir=dataDir,sheet_name=selected_option2)
 
