@@ -715,7 +715,10 @@ def Real_world():
         else:
             st.write("Click the button to show it.")
 
-
+        st.session_state['show_cmlt_contour1'] = False
+        st.session_state['show_cmlt_contour2'] = False
+        st.session_state['show_contour1'] = False
+        st.session_state['show_contour2'] = False        
         with st.form("form"):    
             with col1: 
                 drvt1_index_x_sets = []
@@ -769,10 +772,10 @@ def Real_world():
                     density1 = st.slider('Enter arrow density', 0.0, 10.0, 1.0,key ='density1') 
         
                     # countour line 
-                    show_contour1 = st.checkbox('Show signal contour line',value=False,key ='show_contour1')         
+                    st.session_state['show_contour1'] = st.checkbox('Show signal contour line',value=False,key ='show_contour1')         
                     
                     # countour line of cumulative
-                    show_cmlt_contour1 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour1')
+                    st.session_state['show_cmlt_contour1'] = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour1')
                     cntrlinecml1 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=max_height, value=1200.0, step=50.0,key ='cntrlinecml1')                  
                     col1_center_x,col1_center_y = st.slider('center x coordinate', 0, 49, int(df1_x),key ='1x'),st.slider('center y coordinate', 0, 49, int(df1_y),key ='1y') 
                     min_1=np.int32(np.min([df1_x, 50-df1_x,df1_y,50-df1_y]))
@@ -837,9 +840,9 @@ def Real_world():
                     densityYN2 = st.checkbox('Show arrow in the stream plot',value=False,key ='densityYN2')
                     density2 = st.slider('Enter arrow density', 0.0, 10.0, 1.0,key ='density2')
                     # countour line 
-                    show_contour2 = st.checkbox('Show signal contour line',value=False,key ='show_contour2')            
+                    st.session_state['show_contour2'] = st.checkbox('Show signal contour line',value=False,key ='show_contour2')            
                     # countour line of culmulative
-                    show_cmlt_contour2 = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour2')     
+                    st.session_state['show_cmlt_contour2'] = st.checkbox('Show cumulative signal contour line',value=False,key ='show_cmlt_contour2')     
                     cntrlinecml2 = st.number_input("Enter a number for the cumulative signal contour line", min_value=0.0, max_value=max_height, value=1200.0, step=50.0,key ='cntrlinecml2')                 
                     col2_center_x,col2_center_y = st.slider('center x coordinate', 0, 49, int(df2_x),key ='2x'),st.slider('center y coordinate', 0, 49, int(df2_y),key ='2y')
                     min_2=np.int32(np.min([df2_x, 50-df2_x,df2_y,50-df2_y]))
@@ -937,9 +940,10 @@ def Real_world():
                     inequ,CWSNR=calculate_index(mtx_delta,col1_apothem*2,col1_apothem*2)
                     col1_inequ_set.append(inequ)
                     col1_CWSNR_set.append(CWSNR) 
-                
-                st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
-                st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
+                if st.session_state['show_contour1'] == True:
+                    st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
+                if st.session_state['show_cmlt_contour1'] == True:
+                    st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
                                  
             with col2_:      
                 contours_dfs = pd.DataFrame()
@@ -1022,9 +1026,10 @@ def Real_world():
                     inequ,CWSNR=calculate_index(mtx_delta,col1_apothem*2,col1_apothem*2)
                     col2_inequ_set.append(inequ)
                     col2_CWSNR_set.append(CWSNR) 
-                    
-                st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
-                st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
+                if st.session_state['show_contour2'] == True:    
+                    st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
+                if st.session_state['show_cmlt_contour2'] == True:
+                    st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
 
         ### zip files and download ###         
         #create_zip()             
@@ -1128,6 +1133,7 @@ def upload():
             st.markdown("---")
             st.markdown("## Generate S2MAP")
             st.session_state['data'] = data
+            
             t_time = np.int32(data.shape[0]/data.shape[1])
             cmlt_contour_color = generate_colors(t_time)
             col,colhide = st.columns([6,1])
