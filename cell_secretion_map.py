@@ -13,11 +13,11 @@ def add_logo(logo_path, width, height):
     modified_logo = logo.resize((width, height))
     return modified_logo
 
-st.image(add_logo(logo_path="./aipharm_logo.png", width=300, height=70)) 
+st.image(add_logo(logo_path="./image/aipharm_logo.png", width=300, height=70)) 
 # Create columns for the title and the graph
 col1, col2 = st.columns([1, 3]) 
 with col1:
-    st.image(add_logo(logo_path="./S2Map_logo.png", width=150, height=150)) 
+    st.image(add_logo(logo_path="./image/S2Map_logo.png", width=150, height=150)) 
 with col2:    
     st.title('An online interactive analytical platform for cell secretion map')
 st.header("Comparison of the cell secretion signals")
