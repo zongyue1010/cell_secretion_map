@@ -61,7 +61,7 @@ from plotly.callbacks import Points, InputDeviceState
 global value_counts
 
 ### color registration ###
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+from matplotlib.colors import BoundaryNorm, ListedColormap, LinearSegmentedColormap
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib.colors as col
@@ -274,8 +274,10 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 customRange = list(np.linspace(500,5000,7))
 full = len(customRange)
 top = plt.get_cmap('rainbow', full)
-newcolors = np.vstack(top(np.linspace(0, 1, full)),)
-newcmp = ListedColormap(newcolors, name='newcmp')
+newcolors = np.vstack(([1, 1, 1, 1],top(np.linspace(0, 1, full)),[1, 0, 0, 1]))
+#st.write(newcolors)
+newcmp = ListedColormap(newcolors) # , name='newcmp'
+#st.write(newcmp)
 ########################
 
 ###############################################
@@ -371,11 +373,15 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     zi = func(xi, yi) 
      
     ### layer 1: signal delta change color layer ###  
-    try:
-        colorLevelsList=list(colorLevels)
-        #colorLevelsList.append(10000)
+    colorLevelsList=list(colorLevels)
+    newcolors = np.append([0],colorLevelsList)
+    extended_levels = np.append(newcolors,[10000])  # Extend the levels
+    #st.write(extended_levels)
+    # Create a BoundaryNorm to map data values to colormap levels
+    norm = BoundaryNorm(extended_levels, newcmp.N)
+    try:               
         ax.contourf(xi, yi, zi, 
-                    levels=colorLevelsList,cmap=newcmp,#list(np.linspace(500,5000,7)),linewidths=2,
+                    cmap=newcmp,norm=norm,#list(np.linspace(500,5000,7)),linewidths=2,#levels=colorLevelsList,
                     #cmap="jet2",
                     linestyles='dashed')
     except:
@@ -404,7 +410,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     if show_contour == True:
         try:
             contours = ax.contour(xi, yi, zi, 
-                              linewidths=2,levels=list(colorLevels),cmap=newcmp,#list(np.linspace(500,5000,7))
+                              linewidths=2,levels=colorLevelsList,cmap=newcmp,#list(np.linspace(500,5000,7))
                               linestyles='dashed')
             ax.clabel(contours,inline=True, fontsize=12) 
         except:
@@ -1063,8 +1069,8 @@ def Real_world():
             #table.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']  
             #st.write(table)
             #st.markdown(get_table_download_link(table, fileName = "DII_comparison"), unsafe_allow_html=True)
-            table_inequ.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']            
-            table_CWSNR.index=['5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']            
+            table_inequ.index=timeline[1:]        
+            table_CWSNR.index=timeline[1:]            
             table_cmb = pd.merge(table_inequ,table_CWSNR,right_index=True,left_index= True)
             st.write(table_cmb)
             st.markdown(get_table_download_link(table_cmb, fileName = "SII_SCI_metrics"), unsafe_allow_html=True)                    
