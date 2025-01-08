@@ -59,6 +59,7 @@ from st_aggrid import GridUpdateMode, DataReturnMode
 from plotly.graph_objs import Figure
 from plotly.callbacks import Points, InputDeviceState
 global value_counts
+#from streamlit_navigation_bar import st_navbar
 
 ### color registration ###
 from matplotlib.colors import BoundaryNorm, ListedColormap, LinearSegmentedColormap
@@ -396,11 +397,12 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
             (mask,mask_top,mask_btm) = GET_MASK(z=z,top=top,btm=btm)
             mask_top_pd = pd.DataFrame(mask_top.reshape(shape))
             mask_top_pd_pstn = np.where(mask_top_pd == True)
+            transposed_matrix = list(zip(*np.array(mask_top_pd_pstn)))
             # Flow goes down gradient (thus -zi)
             dy, dx = np.gradient(-zi) 
             stream = ax.streamplot(xi[0,:], yi[:,0], dx, dy, density=1,arrowsize=1,linewidth=3,minlength=0.011,
                                color = 'grey',#broken_streamlines=True,
-                               start_points=np.column_stack((mask_top_pd[1],mask_top_pd_pstn[0]))
+                               start_points=np.array(transposed_matrix)#np.column_stack((mask_top_pd[1],mask_top_pd_pstn[0]))
                               )#color='0.6',
             # Customize the transparency level
             stream.lines.set_alpha(0.5)
@@ -560,7 +562,7 @@ def get_contourline_df(contours):
 def DERIVATIVE(arr, dx):
     diff = np.diff(arr)    
     # Divide by dx to approximate the derivative
-    derivative = np.array(diff / dx).round(3)
+    derivative = np.array(diff / dx)
     return derivative
 
 
@@ -687,6 +689,8 @@ def Real_world():
     col1, col2 = st.columns(2)
     timeline=['0 mins','5 mins','10 mins','15 mins','20 mins','25 mins','30 mins']
     max_height = 5000
+    col1_inequ_set,col1_CWSNR_set,col2_inequ_set,col2_CWSNR_set=[],[],[],[]
+
     if step1:
         ##########################################
         ### general parameters for the figures ###
