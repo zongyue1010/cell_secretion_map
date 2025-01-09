@@ -1091,7 +1091,7 @@ def get_example(filename=''):
     return df
 
 def upload():
-    st.sidebar.markdown("The matrix can be of dimensions n∗n (n row, n column) or a m∗n (m=x∗n with x time points in a time series data). ")
+    st.sidebar.markdown("The matrix can be of dimensions n×n (n rows and n columns) or a m∗n (m=x×n with x time points in a time series data). ")
     st.sidebar.markdown("The example data can be downloaded via the link:")
     example = get_example('upload.txt')
     # Create a downloadable link
