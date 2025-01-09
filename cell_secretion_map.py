@@ -652,7 +652,7 @@ st.subheader('Handbook download')
 # Provide a download link
 with open(file_path, "rb") as file:
     btn = st.download_button(
-        label="Download .docx file",
+        label="Download handbook in .docx file",
         data=file,
         file_name="S2Map Handbook.docx",
         mime="application/msword"
