@@ -20,7 +20,8 @@ with col1:
     st.image(add_logo(logo_path="./image/S2Map_logo.png", width=150, height=150)) 
 with col2:    
     st.title('An online interactive analytical platform for cell secretion map')
-st.header("Comparison of the cell secretion signals")
+#st.header("Comparison of the cell secretion signals")
+
 
 
 #############
@@ -280,6 +281,8 @@ newcolors = np.vstack(([1, 1, 1, 1],top(np.linspace(0, 1, full)),[1, 0, 0, 1]))
 newcmp = ListedColormap(newcolors) # , name='newcmp'
 #st.write(newcmp)
 ########################
+
+
 
 ###############################################
 ### Create a LinearSegmentedColormap object ###
@@ -631,7 +634,9 @@ def generate_colors(n):
     cmap = plt.get_cmap('tab10')  # Choose a colormap, e.g., 'tab10' which has 10 distinct colors
     colors = [cmap(i) for i in np.linspace(0, 1, n)]
     return colors
-    
+
+
+
 ####################################################
 ### load the object and generate the coordincate ###
 ####################################################
@@ -639,6 +644,19 @@ def generate_colors(n):
 def LOAD_DATA(inputDir='',dataDir='',sheet_name=''):
     df = pd.read_excel(r'./'+inputDir+dataDir, sheet_name=sheet_name,header=None)
     return df
+
+# Path to the .doc file on the server
+file_path = "./S2Map Handbook.docx"
+
+st.subheader('Handbook download')
+# Provide a download link
+with open(file_path, "rb") as file:
+    btn = st.download_button(
+        label="Download .docx file",
+        data=file,
+        file_name="S2Map Handbook.docx",
+        mime="application/msword"
+)
 
 ###############################
 ### sidemenu of data source ###
@@ -1164,6 +1182,7 @@ def upload():
                     # Toggle the visibility when the button is clicked
                     if st.button('Show/Hide parameters for figure',key='show_fig_para2'):
                         st.session_state.show_fig_para_ = not st.session_state.show_fig_para_ 
+
                     # Display content based on the session state
                     if st.session_state.show_fig_para_:
                         # pdi for png figure
@@ -1181,7 +1200,7 @@ def upload():
 
                     else:
                         st.write("Click the button to show it.") 
-        
+
                     ### parameters ###
                     # center coordinate
                     RBF_function_ = 'linear'
@@ -1236,7 +1255,9 @@ def upload():
                             hs_btm_set.append(hs_btm)
                         (top,btm) = (hs_set,hs_btm_set)
                     else:
-                        st.write("Click the button to show it.")                   
+                        st.write("Click the button to show it.")
+
+
                 submitted = st.form_submit_button("Generate!")
                 
             if submitted:
