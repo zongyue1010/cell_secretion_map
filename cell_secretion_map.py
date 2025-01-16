@@ -1058,7 +1058,26 @@ def Real_world():
                     st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
                 if st.session_state.show_cmlt_contour2_s == True:
                     st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
-
+            # the parameter tables
+            Parameter_setting = pd.DataFrame({
+                selected_option1:[RBF_function1,hs1_5,hs1_10,hs1_15,hs1_20,hs1_25,hs1_30,densityYN1,density1,show_contour1,show_cmlt_contour1,cntrlinecml1,
+                                 col1_center_x,col1_center_y,col1_apothem,
+                                 signalCutoff,colorLevelsSet,dpi_value,linewidth,framelinewidth,fontname,tick_labelsize,labelweight],
+                selected_option2:[RBF_function2,hs2_5,hs2_10,hs2_15,hs2_20,hs2_25,hs2_30,densityYN2,density2,show_contour2,show_cmlt_contour2,cntrlinecml2,
+                                 col2_center_x,col2_center_y,col2_apothem,
+                                 signalCutoff,colorLevelsSet,dpi_value,linewidth,framelinewidth,fontname,tick_labelsize,labelweight]})
+            Parameter_setting.index=[
+                'interpolation function','number of hotspots 5-min','number of hotspots 10-min','number of hotspots 15-min',
+                'number of hotspots 20-min','number of hotspots 25-min','number of hotspots 30-min',
+                'show stream plot arrows ','arrow density',
+                'show signal interpolated heatmap’s contour lines','show cumulative signal interpolated heatmap’s contour lines',
+                'cutoff for cumulative signal contours',
+                'center coordinates x','center coordinates y','apothem',
+                'signal noise cutoff','a range of values for coloring',
+                'figure resolution (dpi)','linewidth','frame linewidth',
+                'the name of the font','tick label size','tick label style'
+            ]
+            st.markdown(get_table_download_link(Parameter_setting, fileName = "parameter setting"), unsafe_allow_html=True) 
         ### zip files and download ###         
         #create_zip()             
         ## Provide download link
@@ -1071,7 +1090,7 @@ def Real_world():
         with placeholder:
             st.download_button(label='Download plots', data=figs2zip(figSet), file_name='plots.zip')    
 
-    step2 = st.checkbox('Step 2: show the measurement of the dissymmetry and diffusion of cumulative signals using Signal Inequality Index (SII) and Signal Coverage Index (SCI)',value=True)
+    step2 = st.checkbox('Step 2: show the measurement of the dissymmetry and diffusion of cumulative signals using the Signal Inequality Index (SII) and Signal Coverage Index (SCI)',value=True)
     if step2:
         _start = 0
         _end = 3
@@ -1344,9 +1363,25 @@ def upload():
                     col_CWSNR_set.append(CWSNR)   
                     st.markdown(get_table_download_link(contours_dfs, fileName = "contour_line.txt"), unsafe_allow_html=True)
                     st.markdown(get_table_download_link(contours_cmltv_dfs, fileName = "cumulative_contour_line.txt"), unsafe_allow_html=True)
+                    # patameter setting
+                    parameter_setting_ = pd.DataFrame({uploaded_file.name:[
+                        RBF_function_,hs_set,densityYN,density,show_contour,show_cmlt_contour,cntrlinecml,col_center_x,col_center_y,col_apothem,
+                        signalCutoff_,colorLevels_,dpi_value,linewidth,framelinewidth,fontname,tick_labelsize,labelweight
+                    ]})
+                    parameter_setting_.index=['interpolation function','number of hotspots for each time points',
+                'show stream plot arrows ','arrow density',
+                'show signal interpolated heatmap’s contour lines','show cumulative signal interpolated heatmap’s contour lines',
+                'cutoff for cumulative signal contours',
+                'center coordinates x','center coordinates y','apothem',
+                'signal noise cutoff','a range of values for coloring',
+                'figure resolution (dpi)','linewidth','frame linewidth',
+                'the name of the font','tick label size','tick label style']
+                st.markdown(get_table_download_link(parameter_setting_, fileName = "parameter setting of user uploaded data"), unsafe_allow_html=True) 
     #st.write(col_inequ_set)
     #st.write(col_CWSNR_set)
     try:
+        st.markdown("---")
+        st.markdown("## Show the measurement of the dissymmetry and diffusion of cumulative signals")
         table_inequ=pd.DataFrame({'SII':col_inequ_set})
         table_CWSNR=pd.DataFrame({'SCI':col_CWSNR_set})     
         table_inequ.index=list(range(0,t_time,1))
