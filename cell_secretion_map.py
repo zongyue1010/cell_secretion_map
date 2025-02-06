@@ -380,9 +380,10 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     colorLevelsList=list(colorLevels)
     newcolors = np.append([0],colorLevelsList)
     #print(np.array(colorLevelsList))
+    st.write(np.max(zi))
     # less than 5000 have a total
-    if np.max(newcolors) < 5000:
-        extended_levels = np.append(newcolors,[5000])  # Extend the levels
+    if np.max(newcolors) < 10000:
+        extended_levels = np.append(newcolors,[10000])  # Extend the levels
         #st.write(extended_levels)
         # Create a BoundaryNorm to map data values to colormap levels
         norm = BoundaryNorm(extended_levels, newcmp.N)
@@ -391,10 +392,10 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
                     cmap=newcmp,norm=norm,#list(np.linspace(500,5000,7)),linewidths=2,#levels=colorLevelsList,
                     #cmap="jet2",
                     linestyles='dashed')
-    else:
+    else:        
         try:               
             ax.contourf(xi, yi, zi, 
-                    cmap=newcmp,levels = list(np.linspace(500,np.max(zi),7)),#linewidths=2,#levels=colorLevelsList,
+                    cmap=newcmp,levels = list(np.linspace(np.min(colorLevelsList),np.max(zi),7)),#linewidths=2,#levels=colorLevelsList,
                     #cmap="jet2",
                     linestyles='dashed')
         except:
