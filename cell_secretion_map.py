@@ -379,17 +379,23 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     ### layer 1: signal delta change color layer ###  
     colorLevelsList=list(colorLevels)
     newcolors = np.append([0],colorLevelsList)
-    extended_levels = np.append(newcolors,[10000])  # Extend the levels
-    #st.write(extended_levels)
-    # Create a BoundaryNorm to map data values to colormap levels
-    norm = BoundaryNorm(extended_levels, newcmp.N)
-    try:               
+    if newcolors[-1] < 5000:
+        extended_levels = np.append(newcolors,[5000])  # Extend the levels
+        #st.write(extended_levels)
+        # Create a BoundaryNorm to map data values to colormap levels
+        norm = BoundaryNorm(extended_levels, newcmp.N)
         ax.contourf(xi, yi, zi, 
                     cmap=newcmp,norm=norm,#list(np.linspace(500,5000,7)),linewidths=2,#levels=colorLevelsList,
                     #cmap="jet2",
                     linestyles='dashed')
-    except:
-        print("not available for signal delta change")
+    else:
+        try:               
+            ax.contourf(xi, yi, zi, 
+                    cmap=newcmp,levels = customRange,#linewidths=2,#levels=colorLevelsList,
+                    #cmap="jet2",
+                    linestyles='dashed')
+        except:
+            print("not available for signal delta change")
 
     ### layer 2: Plot stream-plot for signal delta change ###
     if densityYN == True:
