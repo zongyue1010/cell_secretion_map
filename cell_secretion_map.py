@@ -379,11 +379,14 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     ### layer 1: signal delta change color layer ###  
     colorLevelsList=list(colorLevels)
     newcolors = np.append([0],colorLevelsList)
-    if newcolors[-1] < 5000:
+    print(np.array(colorLevelsList))
+    # less than 5000 have a total
+    if np.max(newcolors) < 5000:
         extended_levels = np.append(newcolors,[5000])  # Extend the levels
         #st.write(extended_levels)
         # Create a BoundaryNorm to map data values to colormap levels
         norm = BoundaryNorm(extended_levels, newcmp.N)
+        
         ax.contourf(xi, yi, zi, 
                     cmap=newcmp,norm=norm,#list(np.linspace(500,5000,7)),linewidths=2,#levels=colorLevelsList,
                     #cmap="jet2",
@@ -391,7 +394,7 @@ def plotStream(mtx=[],lx=50,top=10,btm=10,colorLevels=np.linspace(500,5000,7),si
     else:
         try:               
             ax.contourf(xi, yi, zi, 
-                    cmap=newcmp,levels = customRange,#linewidths=2,#levels=colorLevelsList,
+                    cmap=newcmp,levels = list(np.linspace(500,np.max(zi),7)),#linewidths=2,#levels=colorLevelsList,
                     #cmap="jet2",
                     linestyles='dashed')
         except:
