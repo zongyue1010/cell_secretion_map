@@ -6,12 +6,12 @@
 
 ### Online tool available at: [https://au-s2map.streamlit.app/](https://au-s2map.streamlit.app/)
 
-### Zongliang Yue*, Lang Zhou, Fengyuan Huang, and Pengyu Chen* 
+### Zongliang Yue*, Lang Zhou, Peizhen Sun, Xuejia Kang, Fengyuan Huang, and Pengyu Chen* 
 ### contact: zzy0065@auburn.edu, pengyuc@auburn.edu
 
 
 ### How to cite us
-> S2Map: An Online Interactive Platform for Signal Analysis in Cell Secretion-Signal Map. Bioinformatics (under review)
+> S2Map: A Novel Computational Platform for Identifying Secretio-types Through Cell Secretion-Signal Map. Bioinformatics Advances (under review)
 
 ---
 

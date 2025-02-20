@@ -1419,7 +1419,7 @@ page_names_to_funcs[selected_page]()
 ##############
 st.header('Cite us:')
 
-st.markdown(f"\n*Zongliang Yue\*, Lang Zhou, Fengyuan Huang and Pengyu Chen\**, S2Map: An online interactive analytical platform for cell secretion map generation, under review.")
+st.markdown(f"\n*Zongliang Yue\*, Lang Zhou, Peizhen Sun, Xuejia Kang, Fengyuan Huang and Pengyu Chen\**, S2Map: A Novel Computational Platform for Identifying Secretio-types Through Cell Secretion-Signal Map, under review.")
 st.header('About us:')
 st.write(f"If you have questions or comments about the database contents or technical support, please email Dr. Zongliang Yue, zzy0065@auburn.edu")
 st.write("Our Research group: AI.pharm, Auburn University, Auburn, USA. https://github.com/ai-pharm-AU")
